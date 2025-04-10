@@ -29,7 +29,7 @@ export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
       <Center>
         <ModelRenderer />
       </Center>
-      <OrbitControls enableZoom={false} />
+      <OrbitControls enableZoom={true} />
     </Canvas>
     <DecalControls />
   </>
@@ -136,16 +136,17 @@ function Jacket(props) {
   const { nodes, materials } = useGLTF("/jacket_model.glb");
 
   useFrame((state, delta) => {
-    if (materials.Material) {
-      easing.dampC(materials.Material.color, snap.selectedColor, 0.25, delta);
+    if (materials.Yogamat) {
+      easing.dampC(materials.Yogamat.color, snap.selectedColor, 0.25, delta);
     }
   });
 
   return (
     <mesh
       castShadow
-      geometry={nodes.'3d-model_1'.geometry}
-      material={materials.wire_177028149}
+      geometry={nodes.da_mat.geometry}
+      material={materials.Yogamat}
+      material-roughness={1}
       {...props}
       dispose={null}
     >
@@ -183,14 +184,14 @@ function CustomDecal() {
     jacket: [
       snap.decalPosition[0],
       snap.decalPosition[1],
-      snap.decalPosition[2] + 0.02,
+      snap.decalPosition[2],
     ],
   }[snap.selectedModel];
 
   const scaleMultiplier = {
     shirt: 1,
     hoodie: 2.1,
-    jacket: 1.1,
+    jacket: 2.5,
   }[snap.selectedModel];
 
   const finalScale = snap.decalScale * scaleMultiplier;
