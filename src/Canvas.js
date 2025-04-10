@@ -10,11 +10,12 @@ import {
   RandomizedLight,
   useTexture,
   Decal,
-  OrbitControls, // 👈 Added OrbitControls
+  OrbitControls,
 } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { state } from "./store";
 
+// 🔁 Main Canvas App
 export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
   <Canvas
     shadows
@@ -27,17 +28,32 @@ export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
     <Environment files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/potsdamer_platz_1k.hdr" />
     <Backdrop />
     <Center>
-      <Shirt />
+      <ModelRenderer />
     </Center>
-    <OrbitControls enableZoom={false} /> {/* 👈 Orbit controls enabled */}
+    <OrbitControls enableZoom={false} />
   </Canvas>
 );
 
-function Shirt(props) {
+// 🎭 Dynamically choose which model to show
+function ModelRenderer() {
   const snap = useSnapshot(state);
 
-  const texture = useTexture(`/${snap.selectedDecal}.png`);
+  switch (snap.selectedModel) {
+    case "shirt":
+      return <Shirt />;
+    case "hoodie":
+      return <Hoodie />;
+    case "jacket":
+      return <Jacket />;
+    default:
+      return <Shirt />;
+  }
+}
 
+// 👕 Shirt model
+function Shirt(props) {
+  const snap = useSnapshot(state);
+  const texture = useTexture(`/${snap.selectedDecal}.png`);
   const { nodes, materials } = useGLTF("/shirt_baked_collapsed.glb");
 
   useFrame((state, delta) =>
@@ -65,6 +81,73 @@ function Shirt(props) {
   );
 }
 
+// 🧥 Hoodie model
+function Hoodie(props) {
+  const { nodes, materials } = useGLTF("/hoodie_model.glb");
+  return (
+    <mesh
+      castShadow
+      geometry={nodes.Hoodie.geometry}
+      material={materials.Material}
+      {...props}
+      dispose={null}
+    />
+  );
+  return (
+    <mesh
+      castShadow
+      geometry={nodes.T_Shirt_male.geometry}
+      material={materials.lambert1}
+      material-roughness={1}
+      {...props}
+      dispose={null}
+    >
+      <Decal
+        position={[0, 0.04, 0.15]}
+        rotation={[0, 0, 0]}
+        scale={0.15}
+        opacity={0.7}
+        map={texture}
+        map-anisotropy={16}
+      />
+    </mesh>
+  );
+}
+
+// 🧢 Jacket model
+function Jacket(props) {
+  const { nodes, materials } = useGLTF("/jacket_model.glb");
+  return (
+    <mesh
+      castShadow
+      geometry={nodes.Jacket.geometry}
+      material={materials.Material}
+      {...props}
+      dispose={null}
+    />
+  );
+  return (
+    <mesh
+      castShadow
+      geometry={nodes.T_Shirt_male.geometry}
+      material={materials.lambert1}
+      material-roughness={1}
+      {...props}
+      dispose={null}
+    >
+      <Decal
+        position={[0, 0.04, 0.15]}
+        rotation={[0, 0, 0]}
+        scale={0.15}
+        opacity={0.7}
+        map={texture}
+        map-anisotropy={16}
+      />
+    </mesh>
+  );
+}
+
+// 🧨 Backdrop
 function Backdrop() {
   const shadows = useRef();
 
@@ -105,5 +188,9 @@ function Backdrop() {
   );
 }
 
+// ⏬ Preload all GLTFs and textures
 useGLTF.preload("/shirt_baked_collapsed.glb");
+useGLTF.preload("/hoodie_model.glb");
+useGLTF.preload("/jacket_model.glb");
 ["/react.png", "/three2.png", "/pmndrs.png"].forEach(useTexture.preload);
+
