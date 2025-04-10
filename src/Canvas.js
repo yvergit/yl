@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 
@@ -42,7 +42,11 @@ function ModelRenderer() {
     case "shirt":
       return <Shirt />;
     case "hoodie":
-      return <Hoodie />;
+      return (
+        <Suspense fallback={null}>
+          <Hoodie />
+        </Suspense>
+      );
     case "jacket":
       return <Jacket />;
     default:
@@ -56,9 +60,12 @@ function Shirt(props) {
   const texture = useTexture(`/${snap.selectedDecal}.png`);
   const { nodes, materials } = useGLTF("/shirt_baked_collapsed.glb");
 
-  useFrame((state, delta) =>
-    easing.dampC(materials.lambert1.color, snap.selectedColor, 0.25, delta)
-  );
+  // Check if material exists before applying color
+  useFrame((state, delta) => {
+    if (materials.lambert1) {
+      easing.dampC(materials.lambert1.color, snap.selectedColor, 0.25, delta);
+    }
+  });
 
   return (
     <mesh
@@ -83,22 +90,22 @@ function Shirt(props) {
 
 // 🧥 Hoodie model
 function Hoodie(props) {
+  const snap = useSnapshot(state);
+  const texture = useTexture(`/${snap.selectedDecal}.png`);
   const { nodes, materials } = useGLTF("/hoodie_model.glb");
+
+  // Check if material exists before applying color
+  useFrame((state, delta) => {
+    if (materials.leggings) {
+      easing.dampC(materials.leggings.color, snap.selectedColor, 0.25, delta);
+    }
+  });
+
   return (
     <mesh
       castShadow
-      geometry={nodes.Hoodie.geometry}
-      material={materials.Material}
-      {...props}
-      dispose={null}
-    />
-  );
-  return (
-    <mesh
-      castShadow
-      geometry={nodes.T_Shirt_male.geometry}
-      material={materials.lambert1}
-      material-roughness={1}
+      geometry={nodes.leggings_low.geometry}
+      material={materials.leggings}
       {...props}
       dispose={null}
     >
@@ -116,22 +123,22 @@ function Hoodie(props) {
 
 // 🧢 Jacket model
 function Jacket(props) {
+  const snap = useSnapshot(state);
+  const texture = useTexture(`/${snap.selectedDecal}.png`);
   const { nodes, materials } = useGLTF("/jacket_model.glb");
+
+  // Check if material exists before applying color
+  useFrame((state, delta) => {
+    if (materials.Material) {
+      easing.dampC(materials.Material.color, snap.selectedColor, 0.25, delta);
+    }
+  });
+
   return (
     <mesh
       castShadow
       geometry={nodes.Jacket.geometry}
       material={materials.Material}
-      {...props}
-      dispose={null}
-    />
-  );
-  return (
-    <mesh
-      castShadow
-      geometry={nodes.T_Shirt_male.geometry}
-      material={materials.lambert1}
-      material-roughness={1}
       {...props}
       dispose={null}
     >
@@ -190,7 +197,6 @@ function Backdrop() {
 
 // ⏬ Preload all GLTFs and textures
 useGLTF.preload("/shirt_baked_collapsed.glb");
-useGLTF.preload("/hoodie_model.glb");
+useGLTF.preload("/hoodie_model.glb"); // Hoodie model is now preloaded
 useGLTF.preload("/jacket_model.glb");
 ["/react.png", "/three2.png", "/pmndrs.png"].forEach(useTexture.preload);
-
