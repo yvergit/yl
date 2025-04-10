@@ -86,21 +86,21 @@ function Customizer({ config }) {
               style={{ background: snap.selectedColor }}
               onClick={() => (state.selectedModel = "shirt")}
             >
-              Shirt
+              Sports Jersey
             </button>
             <button
               className={snap.selectedModel === "hoodie" ? "active" : ""}
               style={{ background: snap.selectedColor }}
               onClick={() => (state.selectedModel = "hoodie")}
             >
-              Hoodie
+              Yoga Pants
             </button>
             <button
               className={snap.selectedModel === "jacket" ? "active" : ""}
               style={{ background: snap.selectedColor }}
               onClick={() => (state.selectedModel = "jacket")}
             >
-              Jacket
+              Yoga Mat
             </button>
           </div>
         </div>
