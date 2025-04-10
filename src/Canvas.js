@@ -200,3 +200,4 @@ useGLTF.preload("/shirt_baked_collapsed.glb");
 useGLTF.preload("/hoodie_model.glb"); // Hoodie model is now preloaded
 useGLTF.preload("/jacket_model.glb");
 ["/react.png", "/three2.png", "/pmndrs.png"].forEach(useTexture.preload);
+
