@@ -2,7 +2,7 @@ import Logo from "./yl.png";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { Decal } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   AiOutlineHighlight,
   AiOutlineShopping,
@@ -75,6 +75,39 @@ export default function Overlay() {
   const pricePerItem = 59.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
+  useEffect(() => {
+    // Load PayPal button script dynamically
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&components=buttons`;
+    script.async = true;
+    script.onload = () => {
+      window.paypal.Buttons({
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: totalPrice,
+              },
+            }],
+          });
+        },
+        onApprove: (data, actions) => {
+          return actions.order.capture().then((details) => {
+            alert('Payment successful: ' + details.payer.name.given_name);
+            // You can also send the payment details to your server here if needed
+            // After successful payment, you can submit the order form.
+            handleSendOrder(data);
+          });
+        },
+        onError: (err) => {
+          console.error('Error:', err);
+          alert('Payment failed. Please try again.');
+        },
+      }).render("#paypal-button-container");
+    };
+    document.body.appendChild(script);
+  }, [totalPrice]);
+
   return (
     <div className="container">
       <motion.header
@@ -120,7 +153,7 @@ export default function Overlay() {
               position: "absolute",
               top: "100px",
               right: "20px",
-              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#ggg", // Cart modal logic here
+              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#fff", // Cart modal logic here
               padding: "1.5rem",
               borderRadius: "12px",
               boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
@@ -197,6 +230,8 @@ export default function Overlay() {
               <input type="file" name="image" accept="image/*" onChange={handleInputChange} />
             </label>
 
+            <div id="paypal-button-container"></div> {/* PayPal Button */}
+
             <button type="submit" style={{ marginTop: "1rem" }}>
               <FaPaypal /> Send Order
             </button>
@@ -232,7 +267,7 @@ function Intro({ config }) {
         <div className="support--content">
           <div>
             <p>
-              Create your unique and exclusive shirt with our brand-new 3D
+              Create your unique and exclusive sports_tee with our brand-new 3D
               customization tool. <strong>Unleash your imagination</strong> and
               define your own style.
             </p>
@@ -259,23 +294,23 @@ function Customizer({ config }) {
           <h4>Select Model</h4>
           <div className="model-buttons">
             <button
-              className={snap.selectedModel === "shirt" ? "active" : ""}
+              className={snap.selectedModel === "sports_tee" ? "active" : ""}
               style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
-              onClick={() => (state.selectedModel = "shirt")}
+              onClick={() => (state.selectedModel = "sports_tee")}
             >
-              Sports Jersey
+              Sports tee
             </button>
             <button
-              className={snap.selectedModel === "hoodie" ? "active" : ""}
+              className={snap.selectedModel === "yoga_pants" ? "active" : ""}
               style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
-              onClick={() => (state.selectedModel = "hoodie")}
+              onClick={() => (state.selectedModel = "yoga_pants")}
             >
               Yoga Pants
             </button>
             <button
-              className={snap.selectedModel === "jacket" ? "active" : ""}
+              className={snap.selectedModel === "yoga_mat" ? "active" : ""}
               style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
-              onClick={() => (state.selectedModel = "jacket")}
+              onClick={() => (state.selectedModel = "yoga_mat")}
             >
               Yoga Mat
             </button>

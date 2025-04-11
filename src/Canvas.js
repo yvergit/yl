@@ -40,12 +40,12 @@ function ModelRenderer() {
 
   const renderModel = () => {
     switch (snap.selectedModel) {
-      case "shirt":
-        return <Shirt />;
-      case "hoodie":
-        return <Hoodie />;
-      case "jacket":
-        return <Jacket />;
+      case "sports_tee":
+        return <Sports_tee />;
+      case "yoga_pants":
+        return <Yoga_pants />;
+      case "yoga_mat":
+        return <Yoga_mat />;
       default:
         return null;
     }
@@ -83,7 +83,7 @@ function ModelRenderer() {
   );
 }
 
-function Shirt(props) {
+function Sports_tee(props) {
   const snap = useSnapshot(state);
   const { nodes, materials } = useGLTF("/shirt_baked_collapsed.glb");
 
@@ -107,7 +107,7 @@ function Shirt(props) {
   );
 }
 
-function Hoodie(props) {
+function Yoga_pants(props) {
   const snap = useSnapshot(state);
   const { nodes, materials } = useGLTF("/hoodie_model.glb");
 
@@ -131,7 +131,7 @@ function Hoodie(props) {
   );
 }
 
-function Jacket(props) {
+function Yoga_mat(props) {
   const snap = useSnapshot(state);
   const { nodes, materials } = useGLTF("/jacket_model.glb");
 
@@ -174,13 +174,13 @@ function CustomDecal() {
   const texture = useTexture(`/${snap.selectedDecal}.png`);
 
   const adjustedPosition = {
-    shirt: snap.decalPosition,
-    hoodie: [
+    sports_tee: snap.decalPosition,
+    yoga_pants: [
       snap.decalPosition[0] + 0.05,
       snap.decalPosition[1] + 0.20,
       snap.decalPosition[2] + 0.03,
     ],
-    jacket: [
+    yoga_mat: [
       snap.decalPosition[0],
       snap.decalPosition[1],
       snap.decalPosition[2],
@@ -189,9 +189,9 @@ function CustomDecal() {
 
   const scaleMultiplier = useMemo(() => {
     return {
-      shirt: 1,
-      hoodie: 1.7,
-      jacket: 2.5,
+      sports_tee: 1,
+      yoga_pants: 1.7,
+      yoga_mat: 2.5,
     }[snap.selectedModel];
   }, [snap.selectedModel]);
 

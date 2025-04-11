@@ -6,7 +6,7 @@ const state = proxy({
   decals: ["react", "three2", "pmndrs"],
   selectedColor: "pink",
   selectedDecal: "pmndrs",
-  selectedModel: "hoodie",
+  selectedModel: "yoga_pants",
   decalPosition: [0, 0.04, 0.15],
   decalRotation: [0, 0, 0],
   decalScale: 0.15,
