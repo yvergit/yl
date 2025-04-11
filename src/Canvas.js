@@ -29,7 +29,7 @@ export const App = ({ position = [0, 0, 2.5], fov = 25 }) => {
         <Center>
           <ModelRenderer />
         </Center>
-        <OrbitControls enableZoom={true} />
+        <OrbitControls enableZoom={false} />
       </Canvas>
     </>
   );
@@ -96,7 +96,7 @@ function Sports_tee(props) {
       castShadow
       geometry={nodes.T_Shirt_male.geometry}
       material={materials.lambert1}
-      material-roughness={1}
+      material-roughness={-0.5}
       {...props}
       dispose={null}
     >
