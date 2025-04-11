@@ -94,8 +94,6 @@ export default function Overlay() {
         onApprove: (data, actions) => {
           return actions.order.capture().then((details) => {
             alert('Payment successful: ' + details.payer.name.given_name);
-            // You can also send the payment details to your server here if needed
-            // After successful payment, you can submit the order form.
             handleSendOrder(data);
           });
         },
@@ -153,95 +151,149 @@ export default function Overlay() {
               position: "absolute",
               top: "100px",
               right: "20px",
-              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#fff", // Cart modal logic here
+              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#fff",
               padding: "1.5rem",
               borderRadius: "12px",
               boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
               zIndex: 999,
               width: "300px",
+              maxWidth: "95%",
+              height: "auto",
             }}
           >
-            <h3>🛍️ Your Order</h3>
-            <p>Item: {snap.selectedModel}</p>
-            <p>Color: {snap.selectedColor}</p>
-            <p>Total Price: ${totalPrice}</p> {/* Display total price */}
-
-            <label>
-              Size:
-              <select name="size" value={formData.size} onChange={handleInputChange}>
-                <option>S</option>
-                <option>M</option>
-                <option>L</option>
-                <option>XL</option>
-              </select>
-            </label>
-
-            <label>
-              Quantity:
-              <input
-                type="number"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleInputChange}
-                min="1"
-              />
-            </label>
-
-            <label>
-              Email:
-              <input type="email" name="email" required value={formData.email} onChange={handleInputChange} />
-            </label>
-
-            <label>
-              Street Address:
-              <input
-                type="text"
-                name="streetAddress"
-                required
-                value={formData.streetAddress}
-                onChange={handleInputChange}
-              />
-            </label>
-
-            <label>
-              Postal Code:
-              <input
-                type="text"
-                name="postalCode"
-                required
-                value={formData.postalCode}
-                onChange={handleInputChange}
-              />
-            </label>
-
-            <label>
-              Country:
-              <input
-                type="text"
-                name="country"
-                required
-                value={formData.country}
-                onChange={handleInputChange}
-              />
-            </label>
-
-            <label>
-              Upload Image (Optional):
-              <input type="file" name="image" accept="image/*" onChange={handleInputChange} />
-            </label>
-
-            <div id="paypal-button-container"></div> {/* PayPal Button */}
-
-            <button type="submit" style={{ marginTop: "1rem" }}>
-              <FaPaypal /> Send Order
-            </button>
-            <button
-              type="button"
-              onClick={() => setCartOpen(false)}
-              style={{ marginTop: "0.5rem", background: "red", border: "none", textDecoration: "underline" }}
+            <div
+              style={{
+                maxHeight: "70vh",
+                overflowY: "auto",
+                padding: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                width: "100%",
+                boxSizing: "border-box",
+              }}
             >
-              Cancel
-            </button>
+              <h3 style={{ marginBottom: "0.5rem", fontSize: "1.5rem", textAlign: "center" }}>
+                🛍️ Your Order
+              </h3>
+              <p style={{ fontSize: "1rem" }}>
+                <strong>Item:</strong> {snap.selectedModel}
+              </p>
+              <p style={{ fontSize: "1rem" }}>
+                <strong>Color:</strong> {snap.selectedColor}
+              </p>
+              <p style={{ fontSize: "1rem" }}>
+                <strong>Total:</strong> ${totalPrice}
+              </p>
+
+              {/* FORM FIELDS */}
+              {[
+                { label: "Size", name: "size", type: "select", options: ["S", "M", "L", "XL"] },
+                { label: "Quantity", name: "quantity", type: "number" },
+                { label: "Email", name: "email", type: "email" },
+                { label: "Street Address", name: "streetAddress", type: "text" },
+                { label: "Postal Code", name: "postalCode", type: "text" },
+                { label: "Country", name: "country", type: "text" },
+              ].map((field) => (
+                <div key={field.name} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                  <label style={{ fontSize: "1rem" }}>{field.label}:</label>
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      style={{
+                        padding: "0.5rem",
+                        borderRadius: "6px",
+                        border: "1px solid #ccc",
+                        fontSize: "1rem",
+                        width: "100%",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {field.options.map((opt) => (
+                        <option key={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      required
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      min={field.type === "number" ? "1" : undefined}
+                      style={{
+                        padding: "0.5rem",
+                        borderRadius: "6px",
+                        border: "1px solid #ccc",
+                        fontSize: "1rem",
+                        width: "100%",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
+
+              {/* IMAGE UPLOAD */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                <label style={{ fontSize: "1rem" }}>Upload Image (Optional):</label>
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  style={{
+                    fontSize: "0.9rem",
+                  }}
+                />
+              </div>
+
+              {/* PAYPAL */}
+              <div id="paypal-button-container" style={{ marginTop: "0.5rem", width: "100%" }}></div>
+
+              {/* SUBMIT BUTTON */}
+              <button
+                type="submit"
+                style={{
+                  padding: "0.5rem 1rem",
+                  color: "white",
+                  background: "#0070ba",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  transition: "background 0.3s ease",
+                }}
+              >
+                <FaPaypal /> Send Order
+              </button>
+
+              {/* CANCEL BUTTON */}
+              <button
+                type="button"
+                onClick={() => setCartOpen(false)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  color: "white",
+                  background: "#e74c3c",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem",
+                  width: "100%",
+                  transition: "background 0.3s ease",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </motion.form>
         )}
       </AnimatePresence>
@@ -262,7 +314,7 @@ function Intro({ config }) {
     <motion.section {...config}>
       <div className="section--container">
         <div>
-          <h1>Yoga Loo.</h1>
+          <h1></h1>
         </div>
         <div className="support--content">
           <div>
@@ -323,7 +375,7 @@ function Customizer({ config }) {
               key={color}
               className="circle"
               style={{ background: color }}
-              onClick={() => (state.selectedColor = color)} // Apply the updated color change logic
+              onClick={() => (state.selectedColor = color)}
             ></div>
           ))}
         </div>

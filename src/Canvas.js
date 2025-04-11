@@ -1,5 +1,4 @@
-
-import { useRef, Suspense, useMemo } from "react";
+import { useRef, Suspense, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import {
@@ -15,25 +14,26 @@ import {
 import { useSnapshot } from "valtio";
 import { state } from "./store";
 
-export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
-  <>
-    <Canvas
-      shadows
-      gl={{ preserveDrawingBuffer: true }}
-      camera={{ position, fov }}
-      eventSource={document.getElementById("root")}
-      eventPrefix="client"
-    >
-      <ambientLight intensity={0.5} />
-      <Environment files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/potsdamer_platz_1k.hdr" />
-      <Center>
-        <ModelRenderer />
-      </Center>
-      <OrbitControls enableZoom={true} />
-    </Canvas>
-    
-  </>
-);
+export const App = ({ position = [0, 0, 2.5], fov = 25 }) => {
+  return (
+    <>
+      <Canvas
+        shadows
+        gl={{ preserveDrawingBuffer: true }}
+        camera={{ position, fov }}
+        eventSource={document.getElementById("root")}
+        eventPrefix="client"
+      >
+        <ambientLight intensity={0.5} />
+        <Environment files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/potsdamer_platz_1k.hdr" />
+        <Center>
+          <ModelRenderer />
+        </Center>
+        <OrbitControls enableZoom={true} />
+      </Canvas>
+    </>
+  );
+};
 
 function ModelRenderer() {
   const snap = useSnapshot(state);
@@ -53,8 +53,6 @@ function ModelRenderer() {
 
   return (
     <group key={snap.selectedModel}>
-      {" "}
-      {/* This forces remount on model switch */}
       <AccumulativeShadows
         temporal
         frames={60}
@@ -210,8 +208,6 @@ function CustomDecal() {
     />
   );
 }
-
-
 
 // Preload GLTF + textures
 useGLTF.preload("/shirt_baked_collapsed.glb");
