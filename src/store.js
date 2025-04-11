@@ -4,7 +4,7 @@ const state = proxy({
   intro: true,
   colors: ["silver", "white", "yellow", "lightgreen", "purple", "red", "black", "cyan", "pink", "violet", "forestgreen", "#FF7F00"],
   decals: ["react", "three2", "pmndrs"],
-  selectedColor: "pink",
+  selectedColor: "white",
   selectedDecal: "pmndrs",
   selectedModel: "yoga_pants",
   decalPosition: [0, 0.04, 0.15],
