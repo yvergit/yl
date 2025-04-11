@@ -117,7 +117,7 @@ button {
   background-color: #dd5c18;
   border: none;
   border-radius: 4px;
-  color: rgb(255, 255, 255); /* Default text color */
+  color: rgb(0, 0, 0); /* Default text color */
   font-weight: bolder;
   pointer-events: all;
   cursor: pointer;
@@ -167,7 +167,7 @@ button:hover {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid rgb(255, 255, 255);
   transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1);
 }
 
@@ -234,7 +234,7 @@ button:hover {
   background-color: #dd5c18;
   border: none;
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.971);
+  color: rgba(0, 0, 0, 0.971);
   font-weight: bolder;
   pointer-events: all;
   cursor: pointer;

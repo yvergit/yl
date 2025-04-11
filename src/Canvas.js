@@ -1,4 +1,5 @@
-import { useRef, Suspense } from "react";
+
+import { useRef, Suspense, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import {
@@ -13,7 +14,6 @@ import {
 } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { state } from "./store";
-import DecalControls from "./DecalControls";
 
 export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
   <>
@@ -31,7 +31,7 @@ export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
       </Center>
       <OrbitControls enableZoom={true} />
     </Canvas>
-    <DecalControls />
+    
   </>
 );
 
@@ -169,7 +169,6 @@ function CameraRig({ children }) {
   return <group ref={group}>{children}</group>;
 }
 
-// CustomDecal Component
 function CustomDecal() {
   const snap = useSnapshot(state);
   const texture = useTexture(`/${snap.selectedDecal}.png`);
@@ -177,8 +176,8 @@ function CustomDecal() {
   const adjustedPosition = {
     shirt: snap.decalPosition,
     hoodie: [
-      snap.decalPosition[0],
-      snap.decalPosition[1],
+      snap.decalPosition[0] + 0.05,
+      snap.decalPosition[1] + 0.20,
       snap.decalPosition[2] + 0.03,
     ],
     jacket: [
@@ -188,13 +187,15 @@ function CustomDecal() {
     ],
   }[snap.selectedModel];
 
-  const scaleMultiplier = {
-    shirt: 1,
-    hoodie: 2.1,
-    jacket: 2.5,
-  }[snap.selectedModel];
+  const scaleMultiplier = useMemo(() => {
+    return {
+      shirt: 1,
+      hoodie: 1.7,
+      jacket: 2.5,
+    }[snap.selectedModel];
+  }, [snap.selectedModel]);
 
-  const finalScale = snap.decalScale * scaleMultiplier;
+  const finalScale = useMemo(() => snap.decalScale * scaleMultiplier, [snap.decalScale, scaleMultiplier]);
 
   return (
     <Decal
@@ -209,6 +210,8 @@ function CustomDecal() {
     />
   );
 }
+
+
 
 // Preload GLTF + textures
 useGLTF.preload("/shirt_baked_collapsed.glb");
