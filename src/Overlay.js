@@ -267,9 +267,9 @@ function Intro({ config }) {
         <div className="support--content">
           <div>
             <p>
-              Create your unique and exclusive sports_tee with our brand-new 3D
-              customization tool. <strong>Unleash your imagination</strong> and
-              define your own style.
+              Get ready for yoga season with our brand-new cute little 3D
+              webshop. <strong>Treat your body like a temple.</strong>
+              pick your favorite color.
             </p>
             <button
               style={{ background: "black" }}
