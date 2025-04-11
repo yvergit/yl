@@ -109,34 +109,51 @@ export default function Overlay() {
   return (
     <div className="container">
       <motion.header
-        className="header"
-        initial={{ opacity: 0, y: -120 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", duration: 1.8, delay: 1 }}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-          width: "100%",
-          zIndex: 10,
-          position: "relative",
-        }}
-      >
-        <div
-          style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-          onClick={() => {
-            state.intro = true;
-          }}
-        >
-          <img src={Logo} alt="Logo" width="80" height="80" />
-        </div>
-        <AiOutlineShopping
-          size="2.5em"
-          style={{ cursor: "pointer" }}
-          onClick={() => setCartOpen(true)}
-        />
-      </motion.header>
+  className="header"
+  initial={{ opacity: 0, y: -120 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ type: "spring", duration: 1.8, delay: 1 }}
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1rem",
+    width: "100%",
+    zIndex: 10,
+    position: "relative",
+  }}
+>
+  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+    <div
+      style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+      onClick={() => {
+        state.intro = true;
+      }}
+    >
+      <img src={Logo} alt="Logo" width="80" height="80" />
+    </div>
+    <a
+      href="https://www.tiktok.com/@yogalooshop?is_from_webapp=1&sender_device=pc"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <img
+        src="/tiktok.png"
+        alt="TikTok"
+        width="40"
+        height="40"
+        style={{ cursor: "pointer" }}
+      />
+    </a>
+  </div>
+
+  <AiOutlineShopping
+    size="2.5em"
+    style={{ cursor: "pointer" }}
+    onClick={() => setCartOpen(true)}
+  />
+</motion.header>
+
 
       <AnimatePresence>
         {cartOpen && (
