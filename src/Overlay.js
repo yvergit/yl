@@ -60,7 +60,7 @@ export default function Overlay() {
     form.append("image", formData.image);
 
     emailjs
-      .sendForm("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", e.target, "YOUR_PUBLIC_KEY")
+      .sendForm("service_xaztx63", "__ejs-test-mail-service__", e.target, "1MyEdTCbuXB7LL_GW")
       .then(() => {
         alert("Order sent successfully!");
         setCartOpen(false);
@@ -78,7 +78,7 @@ export default function Overlay() {
   useEffect(() => {
     // Load PayPal button script dynamically
     const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&components=buttons`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=LY2KF2K54A4MA_ID&components=buttons`;
     script.async = true;
     script.onload = () => {
       window.paypal.Buttons({
