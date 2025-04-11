@@ -262,20 +262,20 @@ function Intro({ config }) {
     <motion.section {...config}>
       <div className="section--container">
         <div>
-          <h1>LET'S DO IT.</h1>
+          <h1>Yoga Loo.</h1>
         </div>
         <div className="support--content">
           <div>
             <p>
               Get ready for yoga season with our brand-new cute little 3D
-              webshop. <strong>Treat your body like a temple.</strong>
-              pick your favorite color.
+              webshop. <strong>Follow the hype.</strong>
+              Treat your body like a temple.
             </p>
             <button
               style={{ background: "black" }}
               onClick={() => (state.intro = false)}
             >
-              CUSTOMIZE IT <AiOutlineHighlight size="1.3em" />
+              pick your aura <AiOutlineHighlight size="1.3em" />
             </button>
           </div>
         </div>
