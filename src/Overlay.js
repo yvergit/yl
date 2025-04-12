@@ -79,7 +79,8 @@ export default function Overlay() {
   useEffect(() => {
     // Load PayPal button script dynamically
     const script = document.createElement("script");
-    script.src = "https://www.paypal.com/sdk/js?client-id=LY2KF2K54A4MA_ID&components=buttons";
+    script.src = "https://www.paypal.com/sdk/js?client-id=AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ&components=buttons";
+
     script.async = true;
     script.onload = () => {
       window.paypal.Buttons({
