@@ -148,182 +148,228 @@ export default function Overlay() {
   </div>
 
   <AiOutlineShopping
-    size="2.5em"
-    style={{ cursor: "pointer" }}
-    onClick={() => setCartOpen(true)}
-  />
+  size="2.5em"
+  style={{ cursor: "pointer" }}
+  onClick={() => {
+    setCartOpen(true);
+    // Hide the .model-buttons and the "Select Model" text when shop/cart opens
+    const modelButtons = document.querySelectorAll(".model-buttons");
+    const selectModelText = document.querySelector(".model-switch h4");
+
+    modelButtons.forEach((el) => {
+      // Only hide model buttons except cancel button
+      if (!el.classList.contains("cancel-button")) {
+        el.style.display = "none";
+      }
+    });
+
+    if (selectModelText) {
+      selectModelText.style.display = "none";
+    }
+  }}
+/>
 </motion.header>
 
+<AnimatePresence>
+  {cartOpen && (
+    <motion.form
+      className="cart-modal"
+      onSubmit={handleSendOrder}
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      transition={transition}
+      style={{
+        position: "absolute",
+        top: "100px",
+        right: "20px",
+        background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#fff",
+        padding: "1.5rem",
+        borderRadius: "12px",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+        zIndex: 999,
+        width: "300px",
+        maxWidth: "95%",
+        height: "auto",
+      }}
+    >
+      <div
+        style={{
+          maxHeight: "70vh",
+          overflowY: "auto",
+          padding: "1rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <h3
+          style={{
+            marginBottom: "0.5rem",
+            fontSize: "1.5rem",
+            textAlign: "center",
+          }}
+        >
+          🛍️ Your Order
+        </h3>
+        <p style={{ fontSize: "1rem" }}>
+          <strong>Item:</strong> {snap.selectedModel}
+        </p>
+        <p style={{ fontSize: "1rem" }}>
+          <strong>Color:</strong> {snap.selectedColor}
+        </p>
+        <p style={{ fontSize: "1rem" }}>
+          <strong>Total:</strong> ${totalPrice}
+        </p>
 
-      <AnimatePresence>
-        {cartOpen && (
-          <motion.form
-            className="cart-modal"
-            onSubmit={handleSendOrder}
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={transition}
-            style={{
-              position: "absolute",
-              top: "100px",
-              right: "20px",
-              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#fff",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-              zIndex: 999,
-              width: "300px",
-              maxWidth: "95%",
-              height: "auto",
-            }}
+        {/* FORM FIELDS */}
+        {[
+          {
+            label: "Size",
+            name: "size",
+            type: "select",
+            options: ["S", "M", "L", "XL"],
+          },
+          { label: "Quantity", name: "quantity", type: "number" },
+          { label: "Email", name: "email", type: "email" },
+          { label: "Street Address", name: "streetAddress", type: "text" },
+          { label: "Postal Code", name: "postalCode", type: "text" },
+          { label: "Country", name: "country", type: "text" },
+        ].map((field) => (
+          <div
+            key={field.name}
+            style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}
           >
-            <div
-              style={{
-                maxHeight: "70vh",
-                overflowY: "auto",
-                padding: "1rem",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              <h3 style={{ marginBottom: "0.5rem", fontSize: "1.5rem", textAlign: "center" }}>
-                🛍️ Your Order
-              </h3>
-              <p style={{ fontSize: "1rem" }}>
-                <strong>Item:</strong> {snap.selectedModel}
-              </p>
-              <p style={{ fontSize: "1rem" }}>
-                <strong>Color:</strong> {snap.selectedColor}
-              </p>
-              <p style={{ fontSize: "1rem" }}>
-                <strong>Total:</strong> ${totalPrice}
-              </p>
-
-              {/* FORM FIELDS */}
-              {[
-                { label: "Size", name: "size", type: "select", options: ["S", "M", "L", "XL"] },
-                { label: "Quantity", name: "quantity", type: "number" },
-                { label: "Email", name: "email", type: "email" },
-                { label: "Street Address", name: "streetAddress", type: "text" },
-                { label: "Postal Code", name: "postalCode", type: "text" },
-                { label: "Country", name: "country", type: "text" },
-              ].map((field) => (
-                <div key={field.name} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                  <label style={{ fontSize: "1rem" }}>{field.label}:</label>
-                  {field.type === "select" ? (
-                    <select
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      style={{
-                        padding: "0.5rem",
-                        borderRadius: "6px",
-                        border: "1px solid #ccc",
-                        fontSize: "1rem",
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      {field.options.map((opt) => (
-                        <option key={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      required
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      min={field.type === "number" ? "1" : undefined}
-                      style={{
-                        padding: "0.5rem",
-                        borderRadius: "6px",
-                        border: "1px solid #ccc",
-                        fontSize: "1rem",
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
-
-              {/* IMAGE UPLOAD */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                <label style={{ fontSize: "1rem" }}>Upload Image (Optional):</label>
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleInputChange}
-                  style={{
-                    fontSize: "0.9rem",
-                  }}
-                />
-              </div>
-
-              {/* PAYPAL */}
-              <div id="paypal-button-container" style={{ marginTop: "0.5rem", width: "100%" }}></div>
-
-              {/* SUBMIT BUTTON */}
-              <button
-                type="submit"
+            <label style={{ fontSize: "1rem" }}>{field.label}:</label>
+            {field.type === "select" ? (
+              <select
+                name={field.name}
+                value={formData[field.name]}
+                onChange={handleInputChange}
                 style={{
-                  padding: "0.5rem 1rem",
-                  color: "white",
-                  background: "#0070ba",
-                  border: "none",
+                  padding: "0.5rem",
                   borderRadius: "6px",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
+                  border: "1px solid #ccc",
+                  fontSize: "1rem",
                   width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  transition: "background 0.3s ease",
+                  boxSizing: "border-box",
                 }}
               >
-                <FaPaypal /> Send Order
-              </button>
-
-              {/* CANCEL BUTTON */}
-              <button
-                type="button"
-                onClick={() => setCartOpen(false)}
+                {field.options.map((opt) => (
+                  <option key={opt}>{opt}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type}
+                name={field.name}
+                required
+                value={formData[field.name]}
+                onChange={handleInputChange}
+                min={field.type === "number" ? "1" : undefined}
                 style={{
-                  padding: "0.5rem 1rem",
-                  color: "white",
-                  background: "#e74c3c",
-                  border: "none",
+                  padding: "0.5rem",
                   borderRadius: "6px",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
+                  border: "1px solid #ccc",
+                  fontSize: "1rem",
                   width: "100%",
-                  transition: "background 0.3s ease",
+                  boxSizing: "border-box",
                 }}
-              >
-                Cancel
-              </button>
-            </div>
-          </motion.form>
-        )}
-      </AnimatePresence>
+              />
+            )}
+          </div>
+        ))}
 
-      <AnimatePresence>
-        {snap.intro ? (
-          <Intro key="main" config={config} />
-        ) : (
-          <Customizer key="custom" config={config} />
-        )}
-      </AnimatePresence>
-    </div>
-  );
+        {/* IMAGE UPLOAD */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+          <label style={{ fontSize: "1rem" }}>Upload Image (Optional):</label>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleInputChange}
+            style={{
+              fontSize: "0.9rem",
+            }}
+          />
+        </div>
+
+        {/* PAYPAL */}
+        <div
+          id="paypal-button-container"
+          style={{ marginTop: "0.5rem", width: "100%" }}
+        ></div>
+
+        {/* SUBMIT BUTTON */}
+        <button
+          type="submit"
+          style={{
+            padding: "0.5rem 1rem",
+            color: "white",
+            background: "#0070ba",
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "bold",
+            fontSize: "0.9rem",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "0.5rem",
+            transition: "background 0.3s ease",
+          }}
+        >
+          <FaPaypal /> Send Order
+        </button>
+
+        {/* CANCEL BUTTON */}
+        <button
+          type="button"
+          className="cancel-button" // Assign a unique class to the cancel button
+          onClick={() => {
+            setCartOpen(false);
+            // Show all hidden model buttons again when cancel is clicked
+            const modelButtons = document.querySelectorAll(".model-buttons");
+            const selectModelText = document.querySelector(".model-switch h4");
+
+            modelButtons.forEach((el) => {
+              el.style.display = "";
+            });
+
+            if (selectModelText) {
+              selectModelText.style.display = "";
+            }
+          }}
+          style={{
+            padding: "0.5rem 1rem",
+            color: "white",
+            background: "#e74c3c",
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "bold",
+            fontSize: "0.9rem",
+            width: "100%",
+            transition: "background 0.3s ease",
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </motion.form>
+  )}
+</AnimatePresence>
+
+<AnimatePresence>
+  {snap.intro ? (
+    <Intro key="main" config={config} />
+  ) : (
+    <Customizer key="custom" config={config} />
+  )}
+</AnimatePresence>
+</div>
+);
 }
 
 function Intro({ config }) {
