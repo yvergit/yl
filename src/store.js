@@ -2,7 +2,7 @@ import { proxy } from "valtio";
 
 const state = proxy({
   intro: true,
-  colors: ["silver", "white", "yellow", "lightgreen", "purple", "red", "black", "cyan", "pink", "violet", "forestgreen", "#FF7F00"],
+  colors: ["black", "white", "yellow", "lightgreen", "purple", "red", "silver", "cyan", "blue", "violet", "forestgreen", "pink", "#FF7F00"],
   decals: ["react", "three2", "pmndrs"],
   selectedColor: "white",
   selectedDecal: "pmndrs",
