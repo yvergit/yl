@@ -96,7 +96,7 @@ function Sports_tee(props) {
       castShadow
       geometry={nodes.T_Shirt_male.geometry}
       material={materials.lambert1}
-      material-roughness={0.5}
+      material-roughness={2}
       {...props}
       dispose={null}
     >
