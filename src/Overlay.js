@@ -502,7 +502,7 @@ function Intro({ config }) {
               Get ready for yoga season with our brand-new cute little <strong>3D</strong> webshop. <strong>Follow the hype.</strong>
               Treat your body like a temple.
               <p>
-              Shipping from EU & US</p>
+              Shipping from EU & USA</p>
               <p>
               <strong>Yoga loo</strong> &copy; 2025</p>
             </p>
