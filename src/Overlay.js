@@ -502,8 +502,7 @@ function Intro({ config }) {
               Get ready for yoga season with our brand-new cute little 3D
               webshop (you can move these models). <strong>Follow the hype.</strong>
               Treat your body like a temple.
-              <p>
-              <strong>Yoga loo</strong> &copy; 2025</p>
+            
             </p>
             <button
               style={{ background: "black" }}
