@@ -77,36 +77,40 @@ export default function Overlay() {
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
   useEffect(() => {
-    // Load PayPal button script dynamically
+    // Only load PayPal script if it hasn’t already been loaded
+    if (document.getElementById("paypal-sdk")) return;
+  
     const script = document.createElement("script");
     script.src = "https://www.paypal.com/sdk/js?client-id=AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ&components=buttons";
-
+    script.id = "paypal-sdk";
     script.async = true;
     script.onload = () => {
-      window.paypal.Buttons({
-        createOrder: (data, actions) => {
-          return actions.order.create({
-            purchase_units: [{
-              amount: {
-                value: totalPrice,
-              },
-            }],
-          });
-        },
-        onApprove: (data, actions) => {
-          return actions.order.capture().then((details) => {
-            alert('Payment successful: ' + details.payer.name.given_name);
-            handleSendOrder(data);
-          });
-        },
-        onError: (err) => {
-          console.error('Error:', err);
-          alert('Payment failed. Please try again.');
-        },
-      }).render("#paypal-button-container");
+      if (window.paypal) {
+        window.paypal.Buttons({
+          createOrder: (data, actions) => {
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: totalPrice,
+                },
+              }],
+            });
+          },
+          onApprove: (data, actions) => {
+            return actions.order.capture().then((details) => {
+              alert('Payment successful: ' + details.payer.name.given_name);
+              handleSendOrder(data); // only after successful payment
+            });
+          },
+          onError: (err) => {
+            console.error('PayPal SDK Error:', err);
+            alert('Payment failed. Please try again.');
+          },
+        }).render("#paypal-button-container");
+      }
     };
     document.body.appendChild(script);
-  }, [totalPrice]);
+  }, [totalPrice])
 
   const itemDescription = {
     sports_tee: "The recycled sports tee is perfect for any active lifestyle. Lightweight, breathable, and made from high-quality material.",
