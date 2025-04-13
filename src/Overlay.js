@@ -2,7 +2,7 @@ import Logo from "./yl.png";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { Decal } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   AiOutlineHighlight,
   AiOutlineShopping,
@@ -14,6 +14,8 @@ import { useSnapshot } from "valtio";
 import { state } from "./store";
 import { motion, AnimatePresence } from "framer-motion";
 import emailjs from "emailjs-com";
+
+
 
 export default function Overlay() {
   const snap = useSnapshot(state);
@@ -76,41 +78,77 @@ export default function Overlay() {
   const pricePerItem = 59.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
-  useEffect(() => {
-    // Only load PayPal script if it hasn’t already been loaded
-    if (document.getElementById("paypal-sdk")) return;
-  
-    const script = document.createElement("script");
-    script.src = "https://www.paypal.com/sdk/js?client-id=AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ&components=buttons";
-    script.id = "paypal-sdk";
-    script.async = true;
-    script.onload = () => {
-      if (window.paypal) {
-        window.paypal.Buttons({
-          createOrder: (data, actions) => {
-            return actions.order.create({
-              purchase_units: [{
+  const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ";
+const PAYPAL_SCRIPT_ID = "paypal-sdk-script-yverdon";
+
+useEffect(() => {
+  const loadPayPalButtons = () => {
+    const container = document.getElementById("paypal-button-container");
+
+    if (!container) {
+      console.error("PayPal container not found.");
+      return;
+    }
+
+    container.innerHTML = ""; // Clear any previous button
+
+    if (window.paypal && typeof window.paypal.Buttons === "function") {
+      window.paypal.Buttons({
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [
+              {
                 amount: {
-                  value: totalPrice,
+                  value: totalPrice.toString(),
                 },
-              }],
-            });
-          },
-          onApprove: (data, actions) => {
-            return actions.order.capture().then((details) => {
-              alert('Payment successful: ' + details.payer.name.given_name);
-              handleSendOrder(data); // only after successful payment
-            });
-          },
-          onError: (err) => {
-            console.error('PayPal SDK Error:', err);
-            alert('Payment failed. Please try again.');
-          },
-        }).render("#paypal-button-container");
+              },
+            ],
+          });
+        },
+        onApprove: (data, actions) => {
+          return actions.order.capture().then((details) => {
+            alert(`Payment successful: ${details.payer.name.given_name}`);
+            handleSendOrder(data);
+          });
+        },
+        onError: (err) => {
+          console.error("PayPal Button Error:", err);
+          alert("Payment failed. Please try again.");
+        },
+      }).render("#paypal-button-container");
+    } else {
+      console.error("PayPal SDK not available yet.");
+    }
+  };
+
+  const addPayPalScript = () => {
+    const existingScript = document.getElementById(PAYPAL_SCRIPT_ID);
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&components=buttons`;
+      script.id = PAYPAL_SCRIPT_ID;
+      script.async = true;
+      script.onload = loadPayPalButtons;
+      script.onerror = () => {
+        console.error("Failed to load PayPal SDK script.");
+        alert("Failed to load PayPal payment system. Please refresh the page.");
+      };
+      document.body.appendChild(script);
+    } else {
+      // If already loaded and PayPal is ready, render buttons
+      if (window.paypal) {
+        loadPayPalButtons();
+      } else {
+        // If SDK script is there but not yet available
+        existingScript.addEventListener("load", loadPayPalButtons);
       }
-    };
-    document.body.appendChild(script);
-  }, [totalPrice])
+    }
+  };
+
+  addPayPalScript();
+}, [totalPrice]);
+  
 
   const itemDescription = {
     sports_tee: "The recycled sports tee is perfect for any active lifestyle. Lightweight, breathable, and made from high-quality material.",
@@ -189,26 +227,30 @@ export default function Overlay() {
   </div>
 
   <AiOutlineShopping
-    size="2.5em"
-    style={{ cursor: "pointer" }}
-    onClick={() => {
-      setCartOpen(true);
-      // Hide the .model-buttons and the "Select Model" text when shop/cart opens
-      const modelButtons = document.querySelectorAll(".model-buttons");
-      const selectModelText = document.querySelector(".model-switch h4");
+  size="2.5em"
+  style={{ cursor: "pointer" }}
+  onClick={() => {
+    setCartOpen(true);
+    // Hide the .model-buttons and the "Select Model" text when shop/cart opens
+    const modelButtons = document.querySelectorAll(".model-buttons");
+    const selectModelText = document.querySelector(".model-switch h4");
 
-      modelButtons.forEach((el) => {
-        // Only hide model buttons except cancel button
-        if (!el.classList.contains("cancel-button")) {
-          el.style.display = "none";
-        }
-      });
-
-      if (selectModelText) {
-        selectModelText.style.display = "none";
+    modelButtons.forEach((el) => {
+      // Only hide model buttons except cancel button
+      if (!el.classList.contains("cancel-button")) {
+        el.style.display = "none";
       }
-    }}
-  />
+    });
+
+    if (selectModelText) {
+      selectModelText.style.display = "none";
+    }
+
+    // Regenerate PayPal button when cart opens
+    addPayPalScript(); // Ensure this function is defined in your code
+    
+  }}
+/>
 </motion.header>
 
       {/* Description Popup */}
