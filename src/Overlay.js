@@ -64,7 +64,7 @@ export default function Overlay() {
     form.append("image", formData.image);
 
     emailjs
-      .sendForm("service_xaztx63", "__ejs-test-mail-service__", e.target, "1MyEdTCbuXB7LL_GW")
+      .sendForm("service_xaztx63", "template_ec0w1e5", e.target, "1MyEdTCbuXB7LL_GW")
       .then(() => {
         alert("Order sent successfully!");
         setCartOpen(false);
