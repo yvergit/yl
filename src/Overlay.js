@@ -499,7 +499,7 @@ function Intro({ config }) {
         <div className="support--content">
           <div>
             <p>
-              Get ready for yoga season with our brand-new cute little <strong>3D</strong> webshop. <strong>Follow the hype.</strong>
+            <strong>Rotate this model </strong>  and get ready for yoga season with our brand-new cute little <strong>3D</strong> webshop. <strong>Follow the hype.</strong>
               Treat your body like a temple.
               <p>
               Shipping from EU & USA</p>
