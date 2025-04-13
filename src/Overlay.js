@@ -27,9 +27,10 @@ export default function Overlay() {
     postalCode: "",
     country: "",
     size: "M",
-    quantity: 1, // Added quantity state
+    quantity: 0, // Added quantity state
     image: null,
   });
+  
 
   const transition = { type: "spring", duration: 0.8 };
   const config = {
@@ -226,11 +227,18 @@ useEffect(() => {
     </a>
   </div>
 
+  
+
   <AiOutlineShopping
   size="2.5em"
   style={{ cursor: "pointer" }}
   onClick={() => {
+    if (cartOpen) {
+      closeCart(); // Close the cart when clicking the shopping button again
+    } else {
     setCartOpen(true);
+    }
+
     // Hide the .model-buttons and the "Select Model" text when shop/cart opens
     const modelButtons = document.querySelectorAll(".model-buttons");
     const selectModelText = document.querySelector(".model-switch h4");
@@ -245,11 +253,13 @@ useEffect(() => {
     if (selectModelText) {
       selectModelText.style.display = "none";
     }
-
-    // Regenerate PayPal button when cart opens
-    addPayPalScript(); // Ensure this function is defined in your code
+    const addPayPalScript = () => {
+      const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ"; // Replace with your actual PayPal client ID
+      const PAYPAL_SCRIPT_ID = "paypal-sdk-script-yverdon"; // Unique ID for the PayPal script
     
-  }}
+      // Check if the PayPal script already exists
+      const existingScript = document.getElementById(PAYPAL_SCRIPT_ID);
+    }}}
 />
 </motion.header>
 
@@ -396,7 +406,7 @@ useEffect(() => {
                       required
                       value={formData[field.name]}
                       onChange={handleInputChange}
-                      min={field.type === "number" ? "1" : undefined}
+                      min={field.type === "number" ? "0" : undefined}
                       style={{
                         padding: "0.5rem",
                         borderRadius: "6px",
@@ -430,27 +440,6 @@ useEffect(() => {
                 style={{ marginTop: "0.5rem", width: "100%" }}
               ></div>
 
-              {/* SUBMIT BUTTON */}
-              <button
-                type="submit"
-                style={{
-                  padding: "0.5rem 1rem",
-                  color: "white",
-                  background: "#0070ba",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  transition: "background 0.3s ease",
-                }}
-              >
-                <FaPaypal /> Send Order
-              </button>
 
               {/* CANCEL BUTTON */}
               <button
