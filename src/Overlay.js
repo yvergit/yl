@@ -319,7 +319,7 @@ useEffect(() => {
               position: "absolute",
               top: "100px",
               right: "20px",
-              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor,
+              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor || "#fff",
               padding: "1.5rem",
               borderRadius: "12px",
               boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
@@ -355,7 +355,7 @@ useEffect(() => {
                 <strong>Item:</strong> {snap.selectedModel}
               </p>
               <p style={{ fontSize: "1rem" }}>
-                <strong>Color:</strong> {snap.colors.find(c => c.code === snap.selectedColor)?.name || snap.selectedColor}
+                <strong>Color:</strong> {snap.selectedColor}
               </p>
               <p style={{ fontSize: "1rem" }}>
                 <strong>Total:</strong> ${totalPrice}
@@ -530,21 +530,21 @@ function Customizer({ config }) {
           <div className="model-buttons">
             <button
               className={snap.selectedModel === "sports_tee" ? "active" : ""}
-              style={{ background: snap.selectedColor }}
+              style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
               onClick={() => (state.selectedModel = "sports_tee")}
             >
               Sports tee
             </button>
             <button
               className={snap.selectedModel === "yoga_pants" ? "active" : ""}
-              style={{ background: snap.selectedColor }}
+              style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
               onClick={() => (state.selectedModel = "yoga_pants")}
             >
               Yoga Pants
             </button>
             <button
               className={snap.selectedModel === "yoga_mat" ? "active" : ""}
-              style={{ background: snap.selectedColor }}
+              style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
               onClick={() => (state.selectedModel = "yoga_mat")}
             >
               Yoga Mat
@@ -555,11 +555,10 @@ function Customizer({ config }) {
         <div className="color-options">
           {snap.colors.map((color) => (
             <div
-              key={color.code}
+              key={color}
               className="circle"
-              style={{ background: color.code }}
-              onClick={() => (state.selectedColor = color.code)}
-              data-color-name={color.name}
+              style={{ background: color }}
+              onClick={() => (state.selectedColor = color)}
             ></div>
           ))}
         </div>
@@ -580,7 +579,7 @@ function Customizer({ config }) {
 
         <button
           className="share"
-          style={{ background: snap.selectedColor === "White" ? "#ccc" : snap.selectedColor }}
+          style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
           onClick={() => {
             const link = document.createElement("a");
             link.setAttribute("download", "canvas.png");
@@ -599,6 +598,5 @@ function Customizer({ config }) {
         </button>
       </div>
     </motion.section>
-
   );
 }
