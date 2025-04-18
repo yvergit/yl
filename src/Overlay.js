@@ -530,21 +530,21 @@ function Customizer({ config }) {
           <div className="model-buttons">
             <button
               className={snap.selectedModel === "sports_tee" ? "active" : ""}
-              style={{ background: snap.selectedColor }}
+              style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
               onClick={() => (state.selectedModel = "sports_tee")}
             >
               Sports tee
             </button>
             <button
               className={snap.selectedModel === "yoga_pants" ? "active" : ""}
-              style={{ background: snap.selectedColor }}
+              style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
               onClick={() => (state.selectedModel = "yoga_pants")}
             >
               Yoga Pants
             </button>
             <button
               className={snap.selectedModel === "yoga_mat" ? "active" : ""}
-              style={{ background: snap.selectedColor }}
+              style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
               onClick={() => (state.selectedModel = "yoga_mat")}
             >
               Yoga Mat
