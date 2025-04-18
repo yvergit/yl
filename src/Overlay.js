@@ -580,7 +580,7 @@ function Customizer({ config }) {
 
         <button
           className="share"
-          style={{ background: snap.selectedColor === "White" ? "#ccc" : snap.selectedColor }}
+          style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
           onClick={() => {
             const link = document.createElement("a");
             link.setAttribute("download", "canvas.png");
