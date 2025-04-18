@@ -599,5 +599,6 @@ function Customizer({ config }) {
         </button>
       </div>
     </motion.section>
+    
   );
 }
