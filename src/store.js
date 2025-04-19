@@ -10,12 +10,12 @@ const state = proxy({
     { code: "purple", name: "Purple" },
     { code: "red", name: "Red" },
     { code: "silver", name: "Silver" },
-    { code: "cyan", name: "Cyan" },
-    { code: "blue", name: "Blue" },
+    { code: "#418FDE", name: "Somalia" },
+    { code: "00209F", name: "Haitian Blue" },
     { code: "violet", name: "Violet" },
     { code: "forestgreen", name: "Forest Green" },
     { code: "pink", name: "Pink" },
-    { code: "#FF7F00", name: "Holland" }
+    { code: "#FF7F00", name: "Netherlands" }
   ],
   decals: ["react", "three2", "pmndrs"],
   selectedColor: "white",
