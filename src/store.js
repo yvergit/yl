@@ -11,7 +11,7 @@ const state = proxy({
     { code: "red", name: "Red" },
     { code: "silver", name: "Silver" },
     { code: "#418FDE", name: "Somalia" },
-    { code: "00209F", name: "Haitian Blue" },
+    { code: "#00209F", name: "Haiti" },
     { code: "violet", name: "Violet" },
     { code: "forestgreen", name: "Forest Green" },
     { code: "pink", name: "Pink" },
