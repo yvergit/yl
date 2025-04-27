@@ -81,7 +81,7 @@ export default function Overlay() {
   };
 
   // Calculate total price
-  const pricePerItem = 99.99;
+  const pricePerItem = 79.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
   const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ";
