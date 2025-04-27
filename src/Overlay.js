@@ -20,17 +20,22 @@ import emailjs from "emailjs-com";
 export default function Overlay() {
   const snap = useSnapshot(state);
   const [cartOpen, setCartOpen] = useState(false);
-  const [descriptionOpen, setDescriptionOpen] = useState(false); // New state for description pop-up
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [confirmOrder, setConfirmOrder] = useState(false); // NEW: Confirm order state
   const [formData, setFormData] = useState({
     email: "",
     streetAddress: "",
     postalCode: "",
     country: "",
     size: "M",
-    quantity: 0, // Added quantity state
+    quantity: 1,
     image: null,
   });
   
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
   const transition = { type: "spring", duration: 0.8 };
   const config = {
@@ -91,19 +96,24 @@ useEffect(() => {
       return;
     }
 
-    container.innerHTML = ""; // Clear any previous button
+    container.innerHTML = "";
 
     if (window.paypal && typeof window.paypal.Buttons === "function") {
       window.paypal.Buttons({
         createOrder: (data, actions) => {
+          // NEW: Include all order details in description
+          const currentFormData = formDataRef.current;
+          const description = `Email: ${currentFormData.email}, Address: ${currentFormData.streetAddress}, 
+                            Postal: ${currentFormData.postalCode}, Country: ${currentFormData.country},
+                            Size: ${currentFormData.size}, Qty: ${currentFormData.quantity}`;
+          
           return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: totalPrice.toString(),
-                },
+            purchase_units: [{
+              amount: {
+                value: totalPrice.toString(),
               },
-            ],
+              description: description,
+            }],
           });
         },
         onApprove: (data, actions) => {
@@ -148,7 +158,7 @@ useEffect(() => {
   };
 
   addPayPalScript();
-}, [totalPrice]);
+}, [totalPrice, confirmOrder]);
   
 
   const itemDescription = {
@@ -197,6 +207,7 @@ useEffect(() => {
       />
     </a>
   </div>
+
 
   {/* Centered button */}
   <div
@@ -361,6 +372,39 @@ useEffect(() => {
                 <strong>Total:</strong> ${totalPrice}
               </p>
 
+              {/* NEW: Red Close Button */}
+  <button
+          type="button"
+          onClick={() => {
+            setCartOpen(false);
+            setConfirmOrder(false);
+            const modelButtons = document.querySelectorAll(".model-buttons");
+            const selectModelText = document.querySelector(".model-switch h4");
+
+            modelButtons.forEach((el) => {
+              el.style.display = "";
+            });
+
+            if (selectModelText) {
+              selectModelText.style.display = "";
+            }
+          }}
+          style={{
+            position: "absolute",
+            top: "0.5rem",
+            left: "0.5rem",
+            background: "rgba(0, 0, 0, 0.5)",
+            border: "none",
+            color: "#e74c3c",
+            fontSize: "2rem",
+            cursor: "pointer",
+            padding: "2px 6px",
+            zIndex: 9999,
+          }}
+        >
+          x
+        </button>
+
               {/* Form Fields and PayPal */}
               {/* FORM FIELDS */}
               {[
@@ -434,12 +478,41 @@ useEffect(() => {
                 />
               </div>
 
-              {/* PAYPAL */}
+              {/* NEW: Confirm Order button and conditional PayPal container */}
+            {!confirmOrder ? (
+              <button
+                type="button"
+                onClick={() => setConfirmOrder(true)}
+                style={{
+                  padding: "0.8rem 1.5rem",
+                  background: "#4CAF50",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  width: "100%",
+                  marginTop: "1rem",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "transform 0.2s ease, background 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              >
+                CONFIRM ORDER
+              </button>
+            ) : (
               <div
                 id="paypal-button-container"
-                style={{ marginTop: "0.5rem", width: "100%" }}
+                style={{ 
+                  marginTop: "1rem", 
+                  width: "100%",
+                  minHeight: "50px",
+                  transition: "opacity 0.3s ease"
+                }}
               ></div>
-
+            )}
 
               {/* CANCEL BUTTON */}
               <button
@@ -447,6 +520,7 @@ useEffect(() => {
                 className="cancel-button" // Assign a unique class to the cancel button
                 onClick={() => {
                   setCartOpen(false);
+                  setConfirmOrder(false);
                   // Show all hidden model buttons again when cancel is clicked
                   const modelButtons = document.querySelectorAll(".model-buttons");
                   const selectModelText = document.querySelector(".model-switch h4");
