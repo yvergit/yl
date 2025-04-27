@@ -81,7 +81,7 @@ export default function Overlay() {
   };
 
   // Calculate total price
-  const pricePerItem = 59.99;
+  const pricePerItem = 99.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
   const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ";
@@ -161,11 +161,39 @@ useEffect(() => {
 }, [totalPrice, confirmOrder]);
   
 
-  const itemDescription = {
-    sports_tee: "The recycled sports tee is perfect for any active lifestyle. Lightweight, breathable, and made from high-quality material.",
-    yoga_pants: "These yoga pants offer full flexibility and comfort for any yoga session. Stretchy and supportive.",
-    yoga_mat: "This yoga mat is extra cushioned for support during your poses and is perfect for all types of floor exercises.",
-  };
+const itemDescription = {
+  sports_tee: (
+    <>
+      <p>The recycled sports tee is perfect for any active lifestyle. Lightweight, breathable, and made from high-quality material.</p>
+      <p>
+        It is 88% recycled polyester and 12% elastane in the EU, and 81% recycled polyester and 19% spandex Lycra in the US. 
+        The fabric weight is 6.78 oz./yd² (230 g/m²) in the EU and 7.52 oz./yd² (255 g/m²) in the US.
+      </p>
+      <p>
+        The fabric is soft, stretchy, comfortable, moisture-wicking, with a fitted cut, UPF 50+ protection, and premium quality. 
+        It is OEKO-TEX 100 standard and Global Recycled Standard (GRS) certified.
+      </p>
+    </>
+  ),
+  yoga_pants: (
+    <>
+      <p>These yoga pants offer full flexibility and comfort for any yoga session. Stretchy and supportive.</p>
+      <p>
+        Made with 82% organic cotton and 18% spandex for optimal stretch. Features high-waisted design with breathable mesh panels.
+        Available in regular and tall lengths.
+      </p>
+    </>
+  ),
+  yoga_mat: (
+    <>
+      <p>This yoga mat is extra cushioned for support during your poses and is perfect for all types of floor exercises.</p>
+      <p>
+        6mm thick eco-friendly natural Anti-slip rubber base with moisture-absorbing microsuede top layer. 
+        Dimensions: 173cm × 61cm (68" × 24"). Weight: 1.75kg (62 oz).
+      </p>
+    </>
+  ),
+};
 
   return (
     <div className="container">
@@ -275,47 +303,68 @@ useEffect(() => {
 </motion.header>
 
       {/* Description Popup */}
-      <AnimatePresence>
-        {descriptionOpen && (
-          <motion.div
-            className="description-popup"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={transition}
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              backgroundColor: "white",
-              padding: "2rem",
-              borderRadius: "10px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-              zIndex: 9999,
-              width: "80%",
-              maxWidth: "500px",
-            }}
-          >
-            <h3>{snap.selectedModel}</h3>
-            <p>{itemDescription[snap.selectedModel]}</p>
-            <button
-              onClick={() => setDescriptionOpen(false)}
-              style={{
-                background: "#e74c3c",
-                color: "white",
-                padding: "0.5rem 1rem",
-                borderRadius: "6px",
-                fontSize: "1rem",
-                marginTop: "1rem",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+<AnimatePresence>
+  {descriptionOpen && (
+    <motion.div
+      className="description-popup"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={transition}
+      style={{
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        backgroundColor: "white",
+        padding: "2rem",
+        borderRadius: "10px",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+        zIndex: 9999,
+        width: "80%",
+        maxWidth: "500px",
+        maxHeight: "80vh", // Limit height to viewport
+        display: "flex", // Use flex layout
+        flexDirection: "column", // Stack children vertically
+      }}
+    >
+      {/* Scrollable Content Container */}
+      <div style={{ 
+        flex: 1, 
+        overflowY: "auto",
+        paddingRight: "0.5rem", // Prevent scrollbar overlap
+        marginBottom: "1rem"
+      }}>
+        <h3 style={{ marginBottom: "1rem" }}>{snap.selectedModel}</h3>
+        <p style={{ 
+          whiteSpace: "pre-wrap",
+          lineHeight: "1.6",
+          fontSize: "0.9rem"
+        }}>
+          {itemDescription[snap.selectedModel]}
+        </p>
+      </div>
+
+      {/* Cancel Button */}
+      <button
+        onClick={() => setDescriptionOpen(false)}
+        style={{
+          background: "#e74c3c",
+          color: "white",
+          padding: "0.5rem 1rem",
+          borderRadius: "6px",
+          fontSize: "1rem",
+          cursor: "pointer",
+          alignSelf: "flex-end", // Align to right
+          width: "100%", // Full width for mobile
+          maxWidth: "120px" // Limit width on desktop
+        }}
+      >
+        Close
+      </button>
+    </motion.div>
+  )}
+</AnimatePresence>
 
       <AnimatePresence>
         {cartOpen && (
