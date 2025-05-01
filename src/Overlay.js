@@ -81,7 +81,19 @@ export default function Overlay() {
   };
 
   // Calculate total price
-  const pricePerItem = 79.99;
+  const pricePerItem = (() => {
+    switch (snap.selectedModel) {
+      case "sports_tee":
+        return 79.99;
+      case "yoga_pants":
+        return 79.99;
+      case "yoga_mat":
+        return 99.99;
+      default:
+        return 79.99; // fallback price
+    }
+  })();
+  
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
   const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ";
@@ -390,212 +402,201 @@ const itemDescription = {
             }}
           >
             {/* Cart Modal Content */}
-            <div
-              style={{
-                maxHeight: "70vh",
-                overflowY: "auto",
-                padding: "1rem",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              <h3
-                style={{
-                  marginBottom: "0.5rem",
-                  fontSize: "1.5rem",
-                  textAlign: "center",
-                }}
-              >
-                🛍️ Your Order
-              </h3>
-              <p style={{ fontSize: "1rem" }}>
-                <strong>Item:</strong> {snap.selectedModel}
-              </p>
-              <p style={{ fontSize: "1rem" }}>
-                <strong>Color:</strong> {snap.colors.find(c => c.code === snap.selectedColor)?.name || snap.selectedColor}
-              </p>
-              <p style={{ fontSize: "1rem" }}>
-                <strong>Total:</strong> ${totalPrice}
-              </p>
+<div
+  style={{
+    maxHeight: "70vh",
+    overflowY: "auto",
+    padding: "1rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+    width: "100%",
+    boxSizing: "border-box",
+    position: "relative",
+  }}
+>
+  <h3 style={{ marginBottom: "0.5rem", fontSize: "1.5rem", textAlign: "center" }}>
+    🛍️ Your Order
+  </h3>
 
-              {/* NEW: Red Close Button */}
+  {/* MODEL SELECTOR */}
+  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+    <label style={{ fontSize: "1rem" }}>Choose Model:</label>
+    <select
+      value={snap.selectedModel}
+      onChange={(e) => {
+        const newModel = e.target.value;
+        snap.selectedModel = newModel;
+        setFormData({ ...formData, size: "", quantity: 1 }); // Reset relevant form fields
+      }}
+      style={{
+        padding: "0.5rem",
+        borderRadius: "6px",
+        border: "1px solid #ccc",
+        fontSize: "1rem",
+      }}
+    >
+      <option value="sports_tee">Sports Tee</option>
+      <option value="yoga_pants">Yoga Pants</option>
+      <option value="yoga_mat">Yoga Mat</option>
+    </select>
+  </div>
+
+  {/* ORDER SUMMARY */}
+  <div style={{ fontSize: "1rem" }}>
+    <p><strong>Model:</strong> {snap.selectedModel}</p>
+    <p><strong>Color:</strong> {snap.colors.find(c => c.code === snap.selectedColor)?.name || snap.selectedColor}</p>
+    <p><strong>Total:</strong> ${totalPrice}</p>
+  </div>
+
+  {/* CLOSE BUTTON */}
   <button
-          type="button"
-          onClick={() => {
-            setCartOpen(false);
-            setConfirmOrder(false);
-            const modelButtons = document.querySelectorAll(".model-buttons");
-            const selectModelText = document.querySelector(".model-switch h4");
+    type="button"
+    onClick={() => {
+      setCartOpen(false);
+      setConfirmOrder(false);
+      document.querySelectorAll(".model-buttons").forEach(el => el.style.display = "");
+      const selectModelText = document.querySelector(".model-switch h4");
+      if (selectModelText) selectModelText.style.display = "";
+    }}
+    style={{
+      position: "absolute",
+      top: "0.5rem",
+      left: "0.5rem",
+      background: "rgba(0, 0, 0, 0.5)",
+      border: "none",
+      color: "#e74c3c",
+      fontSize: "2rem",
+      cursor: "pointer",
+      padding: "2px 6px",
+      zIndex: 9999,
+    }}
+  >
+    ×
+  </button>
 
-            modelButtons.forEach((el) => {
-              el.style.display = "";
-            });
-
-            if (selectModelText) {
-              selectModelText.style.display = "";
-            }
-          }}
+  {/* FORM FIELDS */}
+  {[
+    {
+      label: "Size",
+      name: "size",
+      type: "select",
+      options: {
+        sports_tee: ["XXS", "XS", "S", "M", "L", "XL", "XXL"],
+        yoga_pants: ["XS", "S", "M", "L", "XL"],
+        yoga_mat: ["Standard", "Large"],
+        default: ["S", "M", "L"],
+      }[snap.selectedModel] || ["S", "M", "L"],
+    },
+    { label: "Quantity", name: "quantity", type: "number" },
+    { label: "Email", name: "email", type: "email" },
+    { label: "Street Address", name: "streetAddress", type: "text" },
+    { label: "Postal Code", name: "postalCode", type: "text" },
+    { label: "Country", name: "country", type: "text" },
+  ].map((field) => (
+    <div key={field.name} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+      <label style={{ fontSize: "1rem" }}>{field.label}:</label>
+      {field.type === "select" ? (
+        <select
+          name={field.name}
+          value={formData[field.name]}
+          onChange={handleInputChange}
+          required
           style={{
-            position: "absolute",
-            top: "0.5rem",
-            left: "0.5rem",
-            background: "rgba(0, 0, 0, 0.5)",
-            border: "none",
-            color: "#e74c3c",
-            fontSize: "2rem",
-            cursor: "pointer",
-            padding: "2px 6px",
-            zIndex: 9999,
+            padding: "0.5rem",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            fontSize: "1rem",
+            width: "100%",
           }}
         >
-          x
-        </button>
+          {field.options.map(opt => <option key={opt}>{opt}</option>)}
+        </select>
+      ) : (
+        <input
+          type={field.type}
+          name={field.name}
+          required
+          min={field.type === "number" ? "1" : undefined}
+          value={formData[field.name]}
+          onChange={handleInputChange}
+          style={{
+            padding: "0.5rem",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            fontSize: "1rem",
+            width: "100%",
+          }}
+        />
+      )}
+    </div>
+  ))}
 
-              {/* Form Fields and PayPal */}
-              {/* FORM FIELDS */}
-              {[
-                {
-                  label: "Size",
-                  name: "size",
-                  type: "select",
-                  options: ["S", "M", "L", "XL"],
-                },
-                { label: "Quantity", name: "quantity", type: "number" },
-                { label: "Email", name: "email", type: "email" },
-                { label: "Street Address", name: "streetAddress", type: "text" },
-                { label: "Postal Code", name: "postalCode", type: "text" },
-                { label: "Country", name: "country", type: "text" },
-              ].map((field) => (
-                <div
-                  key={field.name}
-                  style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}
-                >
-                  <label style={{ fontSize: "1rem" }}>{field.label}:</label>
-                  {field.type === "select" ? (
-                    <select
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      style={{
-                        padding: "0.5rem",
-                        borderRadius: "6px",
-                        border: "1px solid #ccc",
-                        fontSize: "1rem",
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      {field.options.map((opt) => (
-                        <option key={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      required
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      min={field.type === "number" ? "0" : undefined}
-                      style={{
-                        padding: "0.5rem",
-                        borderRadius: "6px",
-                        border: "1px solid #ccc",
-                        fontSize: "1rem",
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
+  {/* IMAGE UPLOAD */}
+  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+    <label style={{ fontSize: "1rem" }}>Upload Image (Optional):</label>
+    <input
+      type="file"
+      name="image"
+      accept="image/*"
+      onChange={handleInputChange}
+      style={{ fontSize: "0.9rem" }}
+    />
+  </div>
 
-              {/* IMAGE UPLOAD */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                <label style={{ fontSize: "1rem" }}>Upload Image (Optional):</label>
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleInputChange}
-                  style={{
-                    fontSize: "0.9rem",
-                  }}
-                />
-              </div>
+  {/* CONFIRM BUTTON / PAYPAL */}
+  {!confirmOrder ? (
+    <button
+      type="button"
+      onClick={() => setConfirmOrder(true)}
+      style={{
+        padding: "0.8rem 1.5rem",
+        background: "#4CAF50",
+        color: "white",
+        border: "none",
+        borderRadius: "8px",
+        fontSize: "1rem",
+        fontWeight: "bold",
+        cursor: "pointer",
+        width: "100%",
+        marginTop: "1rem",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        transition: "transform 0.2s ease, background 0.3s ease",
+      }}
+      onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
+      onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+    >
+      CONFIRM ORDER
+    </button>
+  ) : (
+    <div id="paypal-button-container" style={{ marginTop: "1rem", width: "100%", minHeight: "50px" }} />
+  )}
 
-              {/* NEW: Confirm Order button and conditional PayPal container */}
-            {!confirmOrder ? (
-              <button
-                type="button"
-                onClick={() => setConfirmOrder(true)}
-                style={{
-                  padding: "0.8rem 1.5rem",
-                  background: "#4CAF50",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  width: "100%",
-                  marginTop: "1rem",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                  transition: "transform 0.2s ease, background 0.3s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-              >
-                CONFIRM ORDER
-              </button>
-            ) : (
-              <div
-                id="paypal-button-container"
-                style={{ 
-                  marginTop: "1rem", 
-                  width: "100%",
-                  minHeight: "50px",
-                  transition: "opacity 0.3s ease"
-                }}
-              ></div>
-            )}
-
-              {/* CANCEL BUTTON */}
-              <button
-                type="button"
-                className="cancel-button" // Assign a unique class to the cancel button
-                onClick={() => {
-                  setCartOpen(false);
-                  setConfirmOrder(false);
-                  // Show all hidden model buttons again when cancel is clicked
-                  const modelButtons = document.querySelectorAll(".model-buttons");
-                  const selectModelText = document.querySelector(".model-switch h4");
-
-                  modelButtons.forEach((el) => {
-                    el.style.display = "";
-                  });
-
-                  if (selectModelText) {
-                    selectModelText.style.display = "";
-                  }
-                }}
-                style={{
-                  padding: "0.5rem 1rem",
-                  color: "white",
-                  background: "#e74c3c",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
-                  width: "100%",
-                  transition: "background 0.3s ease",
-                }}
-              >
-                Cancel
-        </button>
+  {/* CANCEL BUTTON */}
+  <button
+    type="button"
+    className="cancel-button"
+    onClick={() => {
+      setCartOpen(false);
+      setConfirmOrder(false);
+      document.querySelectorAll(".model-buttons").forEach(el => el.style.display = "");
+      const selectModelText = document.querySelector(".model-switch h4");
+      if (selectModelText) selectModelText.style.display = "";
+    }}
+    style={{
+      padding: "0.5rem 1rem",
+      color: "white",
+      background: "#e74c3c",
+      border: "none",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      fontSize: "0.9rem",
+      width: "100%",
+      marginTop: "0.5rem",
+    }}
+  >
+    Cancel
+  </button>
       </div>
     </motion.form>
   )}
