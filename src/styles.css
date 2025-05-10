@@ -29,7 +29,7 @@ body {
   color: #222;
   min-height: 100vh;
   overflow-x: hidden;
-  background-color: #008000; /* fallback green background */
+  background-color: #ffffff; /* fallback green background */
 }
 
 /* Desktop + Tablet: animated background */
