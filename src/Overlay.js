@@ -282,7 +282,7 @@ const itemDescription = {
 
   <AiOutlineShopping
   size="4em"
-  style={{ cursor: "pointer", color: "white" }}
+  style={{ cursor: "pointer", color: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
   onClick={() => {
     if (cartOpen) {
       closeCart(); // Close the cart when clicking the shopping button again
