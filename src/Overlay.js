@@ -281,13 +281,13 @@ const itemDescription = {
   
 
   <AiOutlineShopping
-  size="2.5em"
-  style={{ cursor: "pointer" }}
+  size="4em"
+  style={{ cursor: "pointer", color: "white" }}
   onClick={() => {
     if (cartOpen) {
       closeCart(); // Close the cart when clicking the shopping button again
     } else {
-    setCartOpen(true);
+      setCartOpen(true);
     }
 
     // Hide the .model-buttons and the "Select Model" text when shop/cart opens
