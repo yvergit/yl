@@ -29,6 +29,7 @@ body {
   color: #222;
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: #008000; /* fallback green background */
 }
 
 /* 🔁 Layered background image animation with depth and movement */
@@ -60,6 +61,9 @@ body::after {
 body::before {
   background-image: url('backi2.png');
   animation-delay: 10s;
+  z-index: -2;
+  background-color: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
 }
 
 /* 🔁 Smooth fade and zoom keyframes */
@@ -86,14 +90,9 @@ body::before {
   }
 }
 
-/* ✨ Glow overlay (still subtle) */
+/* ✨ Blur effect */
 body::backdrop {
   backdrop-filter: blur(2px);
-}
-body::before {
-  z-index: -2;
-  background-color: rgba(255, 255, 255, 0.03);
-  pointer-events: none;
 }
 
 /* 🧭 Layout enhancements */
@@ -123,6 +122,19 @@ p {
   line-height: 1.6;
   font-size: 1.1em;
 }
+
+/* 📱 Mobile portrait mode: disable heavy background */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  body {
+    background-color: #008000 !important; /* solid green */
+  }
+  body::after,
+  body::before {
+    content: none !important;
+    animation: none !important;
+  }
+}
+
 
 
 
