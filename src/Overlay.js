@@ -328,7 +328,7 @@ const itemDescription = {
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        backgroundColor: "white",
+        backgroundColor: snap.selectedColor || "#ffffff",
         padding: "2rem",
         borderRadius: "10px",
         boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
