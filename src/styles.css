@@ -1,8 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,600;1,900&display=swap");
 @import url("https://rsms.me/inter/inter.css");
+@import url("https://assets.codepen.io/9632/RocherColorGX.woff2");
+
+
+@font-face {
+  font-family: 'Rocher';
+  src: url(https://assets.codepen.io/9632/RocherColorGX.woff2);
+}
+
+@font-palette-values --Mint {
+  font-family: Rocher;
+  base-palette: 7;
+}
 
 html {
-  font-family: "Inter", sans-serif;
+  font-family: Rocher;
+  font-palette: 7;
 }
 
 * {
@@ -25,7 +38,8 @@ body {
   position: relative;
   margin: 0;
   padding: 0;
-  font-family: "Inter", sans-serif;
+  font-family: 'Rocher';
+  font-palette: --Mint;
   color: #222;
   min-height: 100vh;
   overflow-x: hidden;
@@ -220,6 +234,7 @@ section {
   position: relative;
   top: -25%;
   left: 300px;
+  color: white;
 }
 
 .support--content p {
@@ -236,6 +251,7 @@ section {
   height: 100%;
   z-index: -100;
 }
+
 
 /* ✨ Fancy Universal Button Style ✨ */
 button {
