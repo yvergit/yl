@@ -5,7 +5,7 @@ const state = proxy({
   colors: [
     { code: "black", name: "Black" },
     { code: "white", name: "White" },
-    { code: "yellow", name: "Yellow" },
+    { code: "#ffcb00", name: "Brazil" },
     { code: "lightgreen", name: "Light Green" },
     { code: "purple", name: "Purple" },
     { code: "red", name: "Red" },
