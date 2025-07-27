@@ -186,7 +186,7 @@ export default function Overlay() {
               padding: "1.5rem",
               borderRadius: "12px",
               width: "300px",
-              zIndex: 999,
+              zIndex: 9999,
             }}
           >
             <h3>🛍️ Your Order</h3>
