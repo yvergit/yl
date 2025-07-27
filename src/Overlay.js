@@ -48,7 +48,7 @@ export default function Overlay() {
 
   // Calculate total price
   const pricePerItem =
-    snap.selectedModel === "yoga_mat" ? 99.99 : 49.99;
+    snap.selectedModel === "yoga_mat" ? 99.99 : 59.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
   // ✅ Combined Send + Pay Logic
