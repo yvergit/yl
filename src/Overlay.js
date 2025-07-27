@@ -124,11 +124,11 @@ export default function Overlay() {
             <img src={Logo} alt="Logo" width="80" height="80" />
           </div>
           <a
-            href="https://www.tiktok.com/@yogalooshop"
+            href="https://open.spotify.com/artist/1v2Bdrj3QXcJViY7l9U7QJ?si=lW1ulAJaS3qdAqM7rU9-9w"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <img src="/tiktok.png" alt="TikTok" width="40" height="40" />
+            <img src="/tiktok.png" alt="Spotify" width="40" height="40" />
           </a>
         </div>
 
