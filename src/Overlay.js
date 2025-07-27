@@ -1,27 +1,20 @@
 import Logo from "./yl.png";
-import { useGLTF, useTexture } from "@react-three/drei";
-import { Decal } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import { useSnapshot } from "valtio";
+import { state } from "./store";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AiOutlineHighlight,
   AiOutlineShopping,
   AiFillCamera,
-  AiOutlineArrowLeft,
 } from "react-icons/ai";
-import { FaPaypal, FaCreditCard } from "react-icons/fa";
-import { useSnapshot } from "valtio";
-import { state } from "./store";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
 import emailjs from "emailjs-com";
-
-
 
 export default function Overlay() {
   const snap = useSnapshot(state);
   const [cartOpen, setCartOpen] = useState(false);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
-  const [confirmOrder, setConfirmOrder] = useState(false); // NEW: Confirm order state
+
   const [formData, setFormData] = useState({
     email: "",
     streetAddress: "",
@@ -31,7 +24,7 @@ export default function Overlay() {
     quantity: 1,
     image: null,
   });
-  
+
   const formDataRef = useRef(formData);
   useEffect(() => {
     formDataRef.current = formData;
@@ -48,341 +41,139 @@ export default function Overlay() {
     const { name, value, files } = e.target;
     if (name === "image") {
       setFormData({ ...formData, image: files[0] });
-    } else if (name === "quantity") {
-      setFormData({ ...formData, quantity: value });
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-  const handleSendOrder = (e) => {
-    e.preventDefault();
-    const form = new FormData();
-    form.append("email", formData.email);
-    form.append("address", formData.streetAddress);
-    form.append("postalCode", formData.postalCode);
-    form.append("country", formData.country);
-    form.append("quantity", formData.quantity);
-    form.append("size", formData.size);
-    form.append("model", snap.selectedModel);
-    form.append("color", snap.selectedColor);
-    form.append("image", formData.image);
-
-    emailjs
-      .sendForm("service_xaztx63", "template_ec0w1e5", e.target, "1MyEdTCbuXB7LL_GW")
-      .then(() => {
-        alert("Order sent successfully!");
-        setCartOpen(false);
-      })
-      .catch((error) => {
-        console.error("EmailJS Error:", error);
-        alert("Failed to send order. Try again.");
-      });
-  };
-
   // Calculate total price
-  const pricePerItem = (() => {
-    switch (snap.selectedModel) {
-      case "sports_tee":
-        return 79.99;
-      case "yoga_pants":
-        return 79.99;
-      case "yoga_mat":
-        return 99.99;
-      default:
-        return 79.99; // fallback price
-    }
-  })();
-  
+  const pricePerItem =
+    snap.selectedModel === "yoga_mat" ? 99.99 : 49.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
-  const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ";
-const PAYPAL_SCRIPT_ID = "paypal-sdk-script-yverdon";
+  // ✅ Combined Send + Pay Logic
+  const handleSendAndPay = (e) => {
+    e.preventDefault();
 
-useEffect(() => {
-  const loadPayPalButtons = () => {
-    const container = document.getElementById("paypal-button-container");
+    const templateParams = {
+      email: formData.email,
+      streetAddress: formData.streetAddress,
+      postalCode: formData.postalCode,
+      country: formData.country,
+      size: formData.size,
+      quantity: formData.quantity,
+      totalPrice: totalPrice,
+      model: snap.selectedModel,
+      color: snap.selectedColor,
+    };
 
-    if (!container) {
-      console.error("PayPal container not found.");
-      return;
-    }
+    // 1️⃣ Send email first
+    emailjs
+      .send("service_xaztx63", "template_ec0w1e5", templateParams, "1MyEdTCbuXB7LL_GW")
+      .then(() => {
+        // 2️⃣ Redirect to PayPal after success
+        const base = "https://www.paypal.me/yogaloo";
+        const note = `Email: ${formData.email}, Address: ${formData.streetAddress}, ${formData.postalCode}, ${formData.country}, Model: ${snap.selectedModel}, Size: ${formData.size}, Qty: ${formData.quantity}`;
+        const paypalLink = `${base}/${totalPrice}?note=${encodeURIComponent(note)}`;
 
-    container.innerHTML = "";
-
-    if (window.paypal && typeof window.paypal.Buttons === "function") {
-      window.paypal.Buttons({
-        createOrder: (data, actions) => {
-          // NEW: Include all order details in description
-          const currentFormData = formDataRef.current;
-          const description = `Email: ${currentFormData.email}, Address: ${currentFormData.streetAddress}, 
-                            Postal: ${currentFormData.postalCode}, Country: ${currentFormData.country},
-                            Size: ${currentFormData.size}, Qty: ${currentFormData.quantity}`;
-          
-          return actions.order.create({
-            purchase_units: [{
-              amount: {
-                value: totalPrice.toString(),
-              },
-              description: description,
-            }],
-          });
-        },
-        onApprove: (data, actions) => {
-          return actions.order.capture().then((details) => {
-            alert(`Payment successful: ${details.payer.name.given_name}`);
-            handleSendOrder(data);
-          });
-        },
-        onError: (err) => {
-          console.error("PayPal Button Error:", err);
-          alert("Payment failed. Please try again.");
-        },
-      }).render("#paypal-button-container");
-    } else {
-      console.error("PayPal SDK not available yet.");
-    }
+        window.open(paypalLink, "_blank");
+      })
+      .catch(() => alert("❌ Failed to send order. Try again."));
   };
 
-  const addPayPalScript = () => {
-    const existingScript = document.getElementById(PAYPAL_SCRIPT_ID);
-
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&components=buttons`;
-      script.id = PAYPAL_SCRIPT_ID;
-      script.async = true;
-      script.onload = loadPayPalButtons;
-      script.onerror = () => {
-        console.error("Failed to load PayPal SDK script.");
-        alert("Failed to load PayPal payment system. Please refresh the page.");
-      };
-      document.body.appendChild(script);
-    } else {
-      // If already loaded and PayPal is ready, render buttons
-      if (window.paypal) {
-        loadPayPalButtons();
-      } else {
-        // If SDK script is there but not yet available
-        existingScript.addEventListener("load", loadPayPalButtons);
-      }
-    }
+  const itemDescription = {
+    sports_tee: (
+      <>
+        <p>The recycled sports tee is perfect for any active lifestyle. Lightweight, breathable, and made from high-quality material.</p>
+        <p>It is 88% recycled polyester and 12% elastane in the EU, and 81% recycled polyester and 19% spandex Lycra in the US.</p>
+      </>
+    ),
+    yoga_pants: (
+      <>
+        <p>These yoga pants offer full flexibility and comfort for any yoga session. Stretchy and supportive.</p>
+        <p>Made with 82% organic cotton and 18% spandex for optimal stretch.</p>
+      </>
+    ),
+    yoga_mat: (
+      <>
+        <p>This yoga mat is extra cushioned for support during your poses.</p>
+        <p>6mm thick eco-friendly rubber base with a microsuede top layer.</p>
+      </>
+    ),
   };
-
-  addPayPalScript();
-}, [totalPrice, confirmOrder]);
-  
-
-const itemDescription = {
-  sports_tee: (
-    <>
-      <p>The recycled sports tee is perfect for any active lifestyle. Lightweight, breathable, and made from high-quality material.</p>
-      <p>
-        It is 88% recycled polyester and 12% elastane in the EU, and 81% recycled polyester and 19% spandex Lycra in the US. 
-        The fabric weight is 6.78 oz./yd² (230 g/m²) in the EU and 7.52 oz./yd² (255 g/m²) in the US.
-      </p>
-      <p>
-        The fabric is soft, stretchy, comfortable, moisture-wicking, with a fitted cut, UPF 50+ protection, and premium quality. 
-        It is OEKO-TEX 100 standard and Global Recycled Standard (GRS) certified.
-      </p>
-    </>
-  ),
-  yoga_pants: (
-    <>
-      <p>These yoga pants offer full flexibility and comfort for any yoga session. Stretchy and supportive.</p>
-      <p>
-        Made with 82% organic cotton and 18% spandex for optimal stretch. Features high-waisted design with breathable mesh panels.
-        Available in regular and tall lengths.
-      </p>
-    </>
-  ),
-  yoga_mat: (
-    <>
-      <p>This yoga mat is extra cushioned for support during your poses and is perfect for all types of floor exercises.</p>
-      <p>
-        6mm thick eco-friendly natural Anti-slip rubber base with moisture-absorbing microsuede top layer. 
-        Dimensions: 173cm × 61cm (68" × 24"). Weight: 1.75kg (62 oz).
-      </p>
-    </>
-  ),
-};
 
   return (
     <div className="container">
       <motion.header
-  className="header"
-  initial={{ opacity: 0, y: -120 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ type: "spring", duration: 1.8, delay: 1 }}
-  style={{
-    display: "flex",
-    justifyContent: "space-between", // Keep this for the left and right spacing
-    alignItems: "center",
-    padding: "1rem",
-    width: "100%",
-    zIndex: 10,
-    position: "relative",
-  }}
->
-  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-    <div
-      style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-      onClick={() => {
-        state.intro = true;
-      }}
-    >
-      <img src={Logo} alt="Logo" width="80" height="80" />
-    </div>
-    <a
-      href="https://www.tiktok.com/@yogalooshop?is_from_webapp=1&sender_device=pc"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <img
-        src="/tiktok.png"
-        alt="TikTok"
-        width="40"
-        height="40"
-        style={{ cursor: "pointer" }}
-      />
-    </a>
-  </div>
-
-
-  {/* Centered button */}
-  <div
-    style={{
-      position: "absolute", // This makes it float in the center
-      left: "50%", // Moves it to the middle
-      transform: "translateX(-50%)", // Corrects the alignment to be truly centered
-      top: "50%", // Optional: to center vertically, if needed
-      transform: "translate(-50%, -50%)", // Ensures perfect centering
-    }}
-  >
-    <a
-      onClick={() => setDescriptionOpen(true)} // Toggles the description popup when clicked
-
-    >
-      <img
-        src="note.webp"
-        alt="View Item Description"
+        className="header"
+        initial={{ opacity: 0, y: -120 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", duration: 1.8, delay: 1 }}
         style={{
-          background: "none",
-          padding: "0.2rem 0.5rem", // Adjusted padding for a smaller button
-          borderRadius: "6px",
-          cursor: "pointer",
-          width: "50px", // Set a specific width for the image to make it smaller
-          height: "50px", // Set a specific height for the image to make it smaller
-        }}
-      />
-    </a>
-  </div>
-
-  
-
-  <AiOutlineShopping
-  size="4em"
-  style={{ cursor: "pointer", color: snap.selectedColor }}
-  onClick={() => {
-    if (cartOpen) {
-      closeCart(); // Close the cart when clicking the shopping button again
-    } else {
-      setCartOpen(true);
-    }
-
-    // Hide the .model-buttons and the "Select Model" text when shop/cart opens
-    const modelButtons = document.querySelectorAll(".model-buttons");
-    const selectModelText = document.querySelector(".model-switch h4");
-
-    modelButtons.forEach((el) => {
-      // Only hide model buttons except cancel button
-      if (!el.classList.contains("cancel-button")) {
-        el.style.display = "none";
-      }
-    });
-
-    if (selectModelText) {
-      selectModelText.style.display = "none";
-    }
-    const addPayPalScript = () => {
-      const PAYPAL_CLIENT_ID = "AdLF0obmUVJoI5oVGjqjLaP7JS9WZlGmtaSgacIVuZiRpQAQ-B8uSUDKZKy-95ooySdpfzXZcXoYwznQ"; // Replace with your actual PayPal client ID
-      const PAYPAL_SCRIPT_ID = "paypal-sdk-script-yverdon"; // Unique ID for the PayPal script
-    
-      // Check if the PayPal script already exists
-      const existingScript = document.getElementById(PAYPAL_SCRIPT_ID);
-    }}}
-/>
-</motion.header>
-
-      {/* Description Popup */}
-<AnimatePresence>
-  {descriptionOpen && (
-    <motion.div
-      className="description-popup"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={transition}
-      style={{
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        backgroundColor: snap.selectedColor || "#ffffff",
-        padding: "2rem",
-        borderRadius: "10px",
-        boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-        zIndex: 9999,
-        width: "80%",
-        maxWidth: "500px",
-        maxHeight: "80vh", // Limit height to viewport
-        display: "flex", // Use flex layout
-        flexDirection: "column", // Stack children vertically
-      }}
-    >
-      {/* Scrollable Content Container */}
-      <div style={{ 
-        flex: 1, 
-        overflowY: "auto",
-        paddingRight: "0.5rem", // Prevent scrollbar overlap
-        marginBottom: "1rem"
-      }}>
-        <h3 style={{ marginBottom: "1rem" }}>{snap.selectedModel}</h3>
-        <p style={{ 
-          whiteSpace: "pre-wrap",
-          lineHeight: "1.6",
-          fontSize: "0.9rem"
-        }}>
-          {itemDescription[snap.selectedModel]}
-        </p>
-      </div>
-
-      {/* Cancel Button */}
-      <button
-        onClick={() => setDescriptionOpen(false)}
-        style={{
-          background: "#e74c3c",
-          color: "white",
-          padding: "0.5rem 1rem",
-          borderRadius: "6px",
-          fontSize: "1rem",
-          cursor: "pointer",
-          alignSelf: "flex-end", // Align to right
-          width: "100%", // Full width for mobile
-          maxWidth: "120px" // Limit width on desktop
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "1rem",
+          width: "100%",
+          zIndex: 10,
+          position: "relative",
         }}
       >
-        Close
-      </button>
-    </motion.div>
-  )}
-</AnimatePresence>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ cursor: "pointer" }} onClick={() => (state.intro = true)}>
+            <img src={Logo} alt="Logo" width="80" height="80" />
+          </div>
+          <a
+            href="https://www.tiktok.com/@yogalooshop"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src="/tiktok.png" alt="TikTok" width="40" height="40" />
+          </a>
+        </div>
 
+        <AiOutlineShopping
+          size="4em"
+          style={{ cursor: "pointer", color: snap.selectedColor }}
+          onClick={() => setCartOpen(!cartOpen)}
+        />
+      </motion.header>
+
+      {/* Description Popup */}
+      <AnimatePresence>
+        {descriptionOpen && (
+          <motion.div
+            className="description-popup"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={transition}
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "#fff",
+              padding: "2rem",
+              borderRadius: "10px",
+              zIndex: 9999,
+              width: "80%",
+              maxWidth: "500px",
+            }}
+          >
+            <h3>{snap.selectedModel}</h3>
+            {itemDescription[snap.selectedModel]}
+            <button onClick={() => setDescriptionOpen(false)}>Close</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cart Modal */}
       <AnimatePresence>
         {cartOpen && (
           <motion.form
             className="cart-modal"
-            onSubmit={handleSendOrder}
+            onSubmit={handleSendAndPay}
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
@@ -391,226 +182,66 @@ const itemDescription = {
               position: "absolute",
               top: "100px",
               right: "20px",
-              background: snap.selectedColor === "black" ? "#333333" : snap.selectedColor,
+              background: "#fff",
               padding: "1.5rem",
               borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-              zIndex: 999,
               width: "300px",
-              maxWidth: "95%",
-              height: "auto",
+              zIndex: 999,
             }}
           >
-            {/* Cart Modal Content */}
-<div
-  style={{
-    maxHeight: "70vh",
-    overflowY: "auto",
-    padding: "1rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    width: "100%",
-    boxSizing: "border-box",
-    position: "relative",
-  }}
->
-  <h3 style={{ marginBottom: "0.5rem", fontSize: "1.5rem", textAlign: "center" }}>
-    🛍️ Your Order
-  </h3>
+            <h3>🛍️ Your Order</h3>
 
-  {/* MODEL SELECTOR */}
-  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-    <label style={{ fontSize: "1rem" }}>Choose Model:</label>
-    <select
-      value={snap.selectedModel}
-      onChange={(e) => {
-        const newModel = e.target.value;
-        snap.selectedModel = newModel;
-        setFormData({ ...formData, size: "", quantity: 1 }); // Reset relevant form fields
-      }}
-      style={{
-        padding: "0.5rem",
-        borderRadius: "6px",
-        border: "1px solid #ccc",
-        fontSize: "1rem",
-      }}
-    >
-      <option value="sports_tee">Sports Tee</option>
-      <option value="yoga_pants">Yoga Pants</option>
-      <option value="yoga_mat">Yoga Mat</option>
-    </select>
-  </div>
+            {[
+              { label: "Size", name: "size" },
+              { label: "Quantity", name: "quantity" },
+              { label: "Email", name: "email" },
+              { label: "Street Address", name: "streetAddress" },
+              { label: "Postal Code", name: "postalCode" },
+              { label: "Country", name: "country" },
+            ].map((field) => (
+              <div key={field.name}>
+                <label>{field.label}</label>
+                <input
+                  type={field.name === "quantity" ? "number" : "text"}
+                  name={field.name}
+                  required
+                  min={field.name === "quantity" ? 1 : undefined}
+                  value={formData[field.name]}
+                  onChange={handleInputChange}
+                />
+              </div>
+            ))}
 
-  {/* ORDER SUMMARY */}
-  <div style={{ fontSize: "1rem" }}>
-    <p><strong>Model:</strong> {snap.selectedModel}</p>
-    <p><strong>Color:</strong> {snap.colors.find(c => c.code === snap.selectedColor)?.name || snap.selectedColor}</p>
-    <p><strong>Total:</strong> ${totalPrice}</p>
-  </div>
+            <p><strong>Total:</strong> ${totalPrice}</p>
 
-  {/* CLOSE BUTTON */}
-  <button
-    type="button"
-    onClick={() => {
-      setCartOpen(false);
-      setConfirmOrder(false);
-      document.querySelectorAll(".model-buttons").forEach(el => el.style.display = "");
-      const selectModelText = document.querySelector(".model-switch h4");
-      if (selectModelText) selectModelText.style.display = "";
-    }}
-    style={{
-      position: "absolute",
-      top: "0.5rem",
-      left: "0.5rem",
-      background: "rgba(0, 0, 0, 0.5)",
-      border: "none",
-      color: "#e74c3c",
-      fontSize: "2rem",
-      cursor: "pointer",
-      padding: "2px 6px",
-      zIndex: 9999,
-    }}
-  >
-    ×
-  </button>
+            <button
+              type="submit"
+              style={{
+                marginTop: "0.8rem",
+                background: "#0070ba",
+                color: "white",
+                padding: "0.8rem",
+                width: "100%",
+                fontWeight: "bold",
+                borderRadius: "8px",
+                border: "none",
+              }}
+            >
+              💳 SEND INFO & PAY NOW
+            </button>
+          </motion.form>
+        )}
+      </AnimatePresence>
 
-  {/* FORM FIELDS */}
-  {[
-    {
-      label: "Size",
-      name: "size",
-      type: "select",
-      options: {
-        sports_tee: ["XXS", "XS", "S", "M", "L", "XL", "XXL"],
-        yoga_pants: ["XS", "S", "M", "L", "XL"],
-        yoga_mat: ["Standard", "Large"],
-        default: ["S", "M", "L"],
-      }[snap.selectedModel] || ["S", "M", "L"],
-    },
-    { label: "Quantity", name: "quantity", type: "number" },
-    { label: "Email", name: "email", type: "email" },
-    { label: "Street Address", name: "streetAddress", type: "text" },
-    { label: "Postal Code", name: "postalCode", type: "text" },
-    { label: "Country", name: "country", type: "text" },
-  ].map((field) => (
-    <div key={field.name} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-      <label style={{ fontSize: "1rem" }}>{field.label}:</label>
-      {field.type === "select" ? (
-        <select
-          name={field.name}
-          value={formData[field.name]}
-          onChange={handleInputChange}
-          required
-          style={{
-            padding: "0.5rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            fontSize: "1rem",
-            width: "100%",
-          }}
-        >
-          {field.options.map(opt => <option key={opt}>{opt}</option>)}
-        </select>
-      ) : (
-        <input
-          type={field.type}
-          name={field.name}
-          required
-          min={field.type === "number" ? "1" : undefined}
-          value={formData[field.name]}
-          onChange={handleInputChange}
-          style={{
-            padding: "0.5rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            fontSize: "1rem",
-            width: "100%",
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {snap.intro ? (
+          <Intro key="main" config={config} />
+        ) : (
+          <Customizer key="custom" config={config} />
+        )}
+      </AnimatePresence>
     </div>
-  ))}
-
-  {/* IMAGE UPLOAD */}
-  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-    <label style={{ fontSize: "1rem" }}>Upload Image (Optional):</label>
-    <input
-      type="file"
-      name="image"
-      accept="image/*"
-      onChange={handleInputChange}
-      style={{ fontSize: "0.9rem" }}
-    />
-  </div>
-
-  {/* CONFIRM BUTTON / PAYPAL */}
-  {!confirmOrder ? (
-    <button
-      type="button"
-      onClick={() => setConfirmOrder(true)}
-      style={{
-        padding: "0.8rem 1.5rem",
-        background: "#4CAF50",
-        color: "white",
-        border: "none",
-        borderRadius: "8px",
-        fontSize: "1rem",
-        fontWeight: "bold",
-        cursor: "pointer",
-        width: "100%",
-        marginTop: "1rem",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        transition: "transform 0.2s ease, background 0.3s ease",
-      }}
-      onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-      onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-    >
-      CONFIRM ORDER
-    </button>
-  ) : (
-    <div id="paypal-button-container" style={{ marginTop: "1rem", width: "100%", minHeight: "50px" }} />
-  )}
-
-  {/* CANCEL BUTTON */}
-  <button
-    type="button"
-    className="cancel-button"
-    onClick={() => {
-      setCartOpen(false);
-      setConfirmOrder(false);
-      document.querySelectorAll(".model-buttons").forEach(el => el.style.display = "");
-      const selectModelText = document.querySelector(".model-switch h4");
-      if (selectModelText) selectModelText.style.display = "";
-    }}
-    style={{
-      padding: "0.5rem 1rem",
-      color: "white",
-      background: "#e74c3c",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      fontSize: "0.9rem",
-      width: "100%",
-      marginTop: "0.5rem",
-    }}
-  >
-    Cancel
-  </button>
-      </div>
-    </motion.form>
-  )}
-</AnimatePresence>
-
-<AnimatePresence>
-  {snap.intro ? (
-    <Intro key="main" config={config} />
-  ) : (
-    <Customizer key="custom" config={config} />
-  )}
-</AnimatePresence>
-</div>
-);
+  );
 }
 
 function Intro({ config }) {
@@ -621,22 +252,14 @@ function Intro({ config }) {
           <h1></h1>
         </div>
         <div className="support--content">
-          <div>
-            <p>
-            <strong>Rotate this model </strong>  and get ready for yoga season with our brand-new cute little <strong>3D</strong> webshop. <strong>Follow the hype.</strong>
-              Treat your body like a temple.
-              <p>
-              Shipping from EU & USA</p>
-              <p>
-              <strong>Yoga loo</strong> &copy; 2025</p>
-            </p>
-            <button
-              style={{ background: "black" }}
-              onClick={() => (state.intro = false)}
-            >
-              pick your aura <AiOutlineHighlight size="1.3em" />
-            </button>
-          </div>
+          <p>
+            <strong>Rotate this model</strong> and get ready for yoga season!
+          </p>
+          <p>Shipping from EU & USA</p>
+          <p><strong>Yoga loo</strong> © 2025</p>
+          <button style={{ background: "black" }} onClick={() => (state.intro = false)}>
+            pick your aura <AiOutlineHighlight size="1.3em" />
+          </button>
         </div>
       </div>
     </motion.section>
@@ -652,77 +275,51 @@ function Customizer({ config }) {
         <div className="model-switch">
           <h4>Select Model</h4>
           <div className="model-buttons">
-            <button
-              className={snap.selectedModel === "sports_tee" ? "active" : ""}
-              style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
-              onClick={() => (state.selectedModel = "sports_tee")}
-            >
-              Sports tee
-            </button>
-            <button
-              className={snap.selectedModel === "yoga_pants" ? "active" : ""}
-              style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
-              onClick={() => (state.selectedModel = "yoga_pants")}
-            >
-              Yoga Pants
-            </button>
-            <button
-              className={snap.selectedModel === "yoga_mat" ? "active" : ""}
-              style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
-              onClick={() => (state.selectedModel = "yoga_mat")}
-            >
-              Yoga Mat
-            </button>
-          </div>
-        </div>
-
-        <div className="color-options">
-          {snap.colors.map((color) => (
-            <div
-              key={color.code}
-              className="circle"
-              style={{ background: color.code }}
-              onClick={() => (state.selectedColor = color.code)}
-              data-color-name={color.name}
-            ></div>
-          ))}
-        </div>
-
-        <div className="decals">
-          <div className="decals--container">
-            {snap.decals.map((decal) => (
-              <div
-                key={decal}
-                className="decal"
-                onClick={() => (state.selectedDecal = decal)}
+            {["sports_tee", "yoga_pants", "yoga_mat"].map((model) => (
+              <button
+                key={model}
+                className={snap.selectedModel === model ? "active" : ""}
+                style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
+                onClick={() => (state.selectedModel = model)}
               >
-                <img src={decal + "_thumb.png"} alt="brand" />
-              </div>
+                {model.replace("_", " ")}
+              </button>
             ))}
           </div>
         </div>
 
+        {/* ✅ Restored color names on hover */}
+        <div className="color-options">
+          {snap.colors.map((color) => (
+            <div
+              key={color.code}
+              id={color.name}
+              title={color.name} // ✅ Hover shows color name
+              className="circle"
+              style={{ background: color.code }}
+              onClick={() => (state.selectedColor = color.code)}
+            />
+          ))}
+        </div>
+
         <button
           className="share"
-          style={{ background: snap.selectedColor == "white" ? "#ccc" : snap.selectedColor }}
+          style={{ background: snap.selectedColor === "white" ? "#ccc" : snap.selectedColor }}
           onClick={() => {
             const link = document.createElement("a");
             link.setAttribute("download", "canvas.png");
             link.setAttribute(
               "href",
-              document
-                .querySelector("canvas")
+              document.querySelector("canvas")
                 .toDataURL("image/png")
                 .replace("image/png", "image/octet-stream")
             );
             link.click();
           }}
         >
-          DOWNLOAD
-          <AiFillCamera size="1.3em" />
+          DOWNLOAD <AiFillCamera size="1.3em" />
         </button>
       </div>
     </motion.section>
-
   );
 }
