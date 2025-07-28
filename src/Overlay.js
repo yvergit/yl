@@ -2,13 +2,10 @@ import Logo from "./yl.png";
 import { useSnapshot } from "valtio";
 import { state } from "./store";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  AiOutlineHighlight,
-  AiOutlineShopping,
-  AiFillCamera,
-} from "react-icons/ai";
+import { AiOutlineHighlight, AiOutlineShopping, AiFillCamera } from "react-icons/ai";
 import React, { useState, useEffect, useRef } from "react";
 import emailjs from "emailjs-com";
+import InfoIcon from "./info.png";
 
 export default function Overlay() {
   const snap = useSnapshot(state);
@@ -24,11 +21,36 @@ export default function Overlay() {
     quantity: 1,
     image: null,
   });
+const formDataRef = useRef(formData);
+const cartRef = useRef(null);   // ✅ Ref for cart modal
+const descRef = useRef(null);   // ✅ Ref for description popup
 
-  const formDataRef = useRef(formData);
-  useEffect(() => {
-    formDataRef.current = formData;
-  }, [formData]);
+useEffect(() => {
+  formDataRef.current = formData;
+}, [formData]);
+
+// ✅ Close cart OR description when clicking outside
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    // Close cart if open and click is outside
+    if (cartOpen && cartRef.current && !cartRef.current.contains(e.target)) {
+      setCartOpen(false);
+    }
+
+    // Close description if open and click is outside
+    if (descriptionOpen && descRef.current && !descRef.current.contains(e.target)) {
+      setDescriptionOpen(false);
+    }
+  };
+
+  // Add listener only if at least one modal is open
+  if (cartOpen || descriptionOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, [cartOpen, descriptionOpen]);
+
 
   const transition = { type: "spring", duration: 0.8 };
   const config = {
@@ -46,12 +68,9 @@ export default function Overlay() {
     }
   };
 
-  // Calculate total price
-  const pricePerItem =
-    snap.selectedModel === "yoga_mat" ? 99.99 : 59.99;
+  const pricePerItem = snap.selectedModel === "yoga_mat" ? 99.99 : 59.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
-  // ✅ Combined Send + Pay Logic
   const handleSendAndPay = (e) => {
     e.preventDefault();
 
@@ -67,11 +86,9 @@ export default function Overlay() {
       color: snap.selectedColor,
     };
 
-    // 1️⃣ Send email first
     emailjs
       .send("service_xaztx63", "template_ec0w1e5", templateParams, "1MyEdTCbuXB7LL_GW")
       .then(() => {
-        // 2️⃣ Redirect to PayPal after success
         const base = "https://www.paypal.me/yogaloo";
         const note = `Email: ${formData.email}, Address: ${formData.streetAddress}, ${formData.postalCode}, ${formData.country}, Model: ${snap.selectedModel}, Size: ${formData.size}, Qty: ${formData.quantity}`;
         const paypalLink = `${base}/${totalPrice}?note=${encodeURIComponent(note)}`;
@@ -105,44 +122,76 @@ export default function Overlay() {
   return (
     <div className="container">
       <motion.header
-        className="header"
-        initial={{ opacity: 0, y: -120 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", duration: 1.8, delay: 1 }}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-          width: "100%",
-          zIndex: 10,
-          position: "relative",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ cursor: "pointer" }} onClick={() => (state.intro = true)}>
-            <img src={Logo} alt="Logo" width="80" height="80" />
-          </div>
-          <a
-            href="https://open.spotify.com/artist/1v2Bdrj3QXcJViY7l9U7QJ?si=lW1ulAJaS3qdAqM7rU9-9w"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src="/tiktok.png" alt="Spotify" width="40" height="40" />
-          </a>
-        </div>
+  className="header"
+  initial={{ opacity: 0, y: -120 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ type: "spring", duration: 1.8, delay: 1 }}
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1rem",
+    width: "100%",
+    zIndex: 10,
+    position: "relative",
+  }}
+>
+  {/* LEFT SECTION (Logo + Link) */}
+  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+    <div style={{ cursor: "pointer" }} onClick={() => (state.intro = true)}>
+      <img src={Logo} alt="Logo" width="80" height="80" />
+    </div>
+    <a
+      href="https://open.spotify.com/artist/1v2Bdrj3QXcJViY7l9U7QJ?si=lW1ulAJaS3qdAqM7rU9-9w"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <img src="/tiktok.png" alt="Spotify" width="40" height="40" />
+    </a>
+  </div>
 
-        <AiOutlineShopping
-          size="4em"
-          style={{ cursor: "pointer", color: snap.selectedColor }}
-          onClick={() => setCartOpen(!cartOpen)}
-        />
-      </motion.header>
+  {/* ✅ CENTERED INFO BUTTON */}
+  <div
+    style={{
+      position: "absolute",
+      left: "50%",
+      transform: "translateX(-50%)", // ✅ Ensures perfect horizontal center
+    }}
+  >
+    <img
+      src={InfoIcon}
+      alt="Info"
+      style={{
+        width: "40px",
+        height: "40px",
+        cursor: "pointer",
+        transition: "transform 0.2s ease",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.9)")}
+      onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+      onClick={() => setDescriptionOpen(true)}
+    />
+  </div>
+
+  {/* RIGHT SECTION (Cart Icon) */}
+  <AiOutlineShopping
+    size="4em"
+    style={{ cursor: "pointer", color: snap.selectedColor }}
+    onClick={() => setCartOpen(!cartOpen)}
+  />
+</motion.header>
+
+      
+
+
 
       {/* Description Popup */}
       <AnimatePresence>
         {descriptionOpen && (
           <motion.div
+            ref={descRef}
             className="description-popup"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -153,7 +202,7 @@ export default function Overlay() {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              backgroundColor: "#fff",
+              backgroundColor: snap.selectedColor,
               padding: "2rem",
               borderRadius: "10px",
               zIndex: 9999,
@@ -161,17 +210,67 @@ export default function Overlay() {
               maxWidth: "500px",
             }}
           >
+            {/* ✅ Close Button */}
             <h3>{snap.selectedModel}</h3>
             {itemDescription[snap.selectedModel]}
-            <button onClick={() => setDescriptionOpen(false)}>Close</button>
+            <button
+  type="button"
+  onClick={() => setDescriptionOpen(false)}
+  style={{
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    width: "15px",  // ⬅️ Much smaller circle
+    height: "15px", // ⬅️ Same width & height = perfect circle
+    borderRadius: "50%", // ⬅️ Ensures it's a true circle
+    border: "none",
+    background: "radial-gradient(circle at 30% 30%, #ff4d4d, #b30000)",
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "8px", // ⬅️ Scaled down ❌ text
+    lineHeight: "15px", // ⬅️ Centers ❌ vertically
+    textAlign: "center",
+    padding: 0,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow:
+      "0 1px 3px rgba(0,0,0,0.3), inset -0.5px -0.5px 2px rgba(0,0,0,0.4), inset 0.5px 0.5px 2px rgba(255,255,255,0.3)",
+    transition: "all 0.2s ease",
+  }}
+  onMouseEnter={(e) => {
+    e.target.style.background =
+      "radial-gradient(circle at 30% 30%, #ff6666, #cc0000)";
+    e.target.style.boxShadow =
+      "0 2px 4px rgba(0,0,0,0.4), inset -0.5px -0.5px 2px rgba(0,0,0,0.4), inset 0.5px 0.5px 2px rgba(255,255,255,0.5)";
+  }}
+  onMouseLeave={(e) => {
+    e.target.style.background =
+      "radial-gradient(circle at 30% 30%, #ff4d4d, #b30000)";
+    e.target.style.boxShadow =
+      "0 1px 3px rgba(0,0,0,0.3), inset -0.5px -0.5px 2px rgba(0,0,0,0.4), inset 0.5px 0.5px 2px rgba(255,255,255,0.3)";
+  }}
+  onMouseDown={(e) => {
+    e.target.style.background =
+      "radial-gradient(circle at 30% 30%, #ff8080, #cc0000)";
+    e.target.style.transform = "scale(0.85)";
+  }}
+  onMouseUp={(e) => {
+    e.target.style.transform = "scale(1)";
+  }}
+>
+  ❌
+</button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Cart Modal */}
+      {/* ✅ CART MODAL */}
       <AnimatePresence>
         {cartOpen && (
           <motion.form
+            ref={cartRef} // ✅ Reference for outside click detection
             className="cart-modal"
             onSubmit={handleSendAndPay}
             initial={{ opacity: 0, y: -50 }}
@@ -182,13 +281,65 @@ export default function Overlay() {
               position: "absolute",
               top: "100px",
               right: "20px",
-              background: "#fff",
+              background: snap.selectedColor,
               padding: "1.5rem",
               borderRadius: "12px",
               width: "300px",
               zIndex: 9999,
             }}
           >
+            {/* ✅ Close Button */}
+            <button
+  type="button"
+  onClick={() => setCartOpen(false)}
+  style={{
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    width: "15px",  // ⬅️ Much smaller circle
+    height: "15px", // ⬅️ Same width & height = perfect circle
+    borderRadius: "50%", // ⬅️ Ensures it's a true circle
+    border: "none",
+    background: "radial-gradient(circle at 30% 30%, #ff4d4d, #b30000)",
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "8px", // ⬅️ Scaled down ❌ text
+    lineHeight: "15px", // ⬅️ Centers ❌ vertically
+    textAlign: "center",
+    padding: 0,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow:
+      "0 1px 3px rgba(0,0,0,0.3), inset -0.5px -0.5px 2px rgba(0,0,0,0.4), inset 0.5px 0.5px 2px rgba(255,255,255,0.3)",
+    transition: "all 0.2s ease",
+  }}
+  onMouseEnter={(e) => {
+    e.target.style.background =
+      "radial-gradient(circle at 30% 30%, #ff6666, #cc0000)";
+    e.target.style.boxShadow =
+      "0 2px 4px rgba(0,0,0,0.4), inset -0.5px -0.5px 2px rgba(0,0,0,0.4), inset 0.5px 0.5px 2px rgba(255,255,255,0.5)";
+  }}
+  onMouseLeave={(e) => {
+    e.target.style.background =
+      "radial-gradient(circle at 30% 30%, #ff4d4d, #b30000)";
+    e.target.style.boxShadow =
+      "0 1px 3px rgba(0,0,0,0.3), inset -0.5px -0.5px 2px rgba(0,0,0,0.4), inset 0.5px 0.5px 2px rgba(255,255,255,0.3)";
+  }}
+  onMouseDown={(e) => {
+    e.target.style.background =
+      "radial-gradient(circle at 30% 30%, #ff8080, #cc0000)";
+    e.target.style.transform = "scale(0.85)";
+  }}
+  onMouseUp={(e) => {
+    e.target.style.transform = "scale(1)";
+  }}
+>
+  ❌
+</button>
+
+
             <h3>🛍️ Your Order</h3>
 
             {[
@@ -229,16 +380,13 @@ export default function Overlay() {
             >
               💳 SEND INFO & PAY NOW
             </button>
+            
           </motion.form>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {snap.intro ? (
-          <Intro key="main" config={config} />
-        ) : (
-          <Customizer key="custom" config={config} />
-        )}
+        {snap.intro ? <Intro key="main" config={config} /> : <Customizer key="custom" config={config} />}
       </AnimatePresence>
     </div>
   );
@@ -288,13 +436,12 @@ function Customizer({ config }) {
           </div>
         </div>
 
-        {/* ✅ Restored color names on hover */}
         <div className="color-options">
           {snap.colors.map((color) => (
             <div
               key={color.code}
               id={color.name}
-              title={color.name} // ✅ Hover shows color name
+              title={color.name}
               className="circle"
               style={{ background: color.code }}
               onClick={() => (state.selectedColor = color.code)}
@@ -310,9 +457,7 @@ function Customizer({ config }) {
             link.setAttribute("download", "canvas.png");
             link.setAttribute(
               "href",
-              document.querySelector("canvas")
-                .toDataURL("image/png")
-                .replace("image/png", "image/octet-stream")
+              document.querySelector("canvas").toDataURL("image/png").replace("image/png", "image/octet-stream")
             );
             link.click();
           }}
