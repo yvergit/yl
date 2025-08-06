@@ -142,7 +142,7 @@ useEffect(() => {
       <img src={Logo} alt="Logo" width="80" height="80" />
     </div>
     <a
-      href="https://open.spotify.com/artist/1v2Bdrj3QXcJViY7l9U7QJ?si=lW1ulAJaS3qdAqM7rU9-9w"
+      href="https://www.youtube.com/channel/UCQGpVmKUhlzyPmjPsayS-kA"
       target="_blank"
       rel="noopener noreferrer"
     >
