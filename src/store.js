@@ -18,7 +18,7 @@ const state = proxy({
     { code: "#FF7F00", name: "Netherlands" }
   ],
   decals: ["react", "three2", "pmndrs"],
-  selectedColor: "#FF7F00",
+  selectedColor: "forestgreen",
   selectedModel: "yoga_pants",
   selectedDecal: "pmndrs",
   decalPosition: [0, 0.04, 0.15],
