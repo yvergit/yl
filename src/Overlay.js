@@ -68,7 +68,7 @@ useEffect(() => {
     }
   };
 
-  const pricePerItem = snap.selectedModel === "yoga_mat" ? 99.99 : 59.99;
+  const pricePerItem = snap.selectedModel === "yoga_mat" ? 99.99 : 39.99;
   const totalPrice = (formData.quantity * pricePerItem).toFixed(2);
 
   const handleSendAndPay = (e) => {
